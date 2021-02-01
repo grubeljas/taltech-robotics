@@ -23,7 +23,7 @@ class Robot:
         self.robot = robot
 
     def sense():
-        return self.get_front_lasers()
+        self.get_front_lasers()
 
     def act():
         self.set_wheels_speed(SPEEED)
