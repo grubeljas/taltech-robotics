@@ -1,8 +1,10 @@
+"""OT01."""
 import PiBot
 
 
 class Robot:
     """Class."""
+
     def __init__(self):
         """Initialize class."""
         self.robot = PiBot.PiBot()
@@ -43,7 +45,6 @@ class Robot:
     def act(self):
         """act."""
         pass
-
 
 
 def main():
