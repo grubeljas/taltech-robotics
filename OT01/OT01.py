@@ -2,13 +2,11 @@ import PiBot
 
 
 class Robot:
+    """Class."""
     def __init__(self):
-        """
-        Initialize class.
-        """
+        """Initialize class."""
         self.robot = PiBot.PiBot()
         self.shutdown = False
-        
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
@@ -25,6 +23,7 @@ class Robot:
     def spin(self):
         """
         The main loop of the robot.
+
         This loop is expected to call sense, plan, act methods cyclically.
         """
         while not self.shutdown:
@@ -34,12 +33,15 @@ class Robot:
                 self.shutdown = True
 
     def sense(self):
+        """sense."""
         pass
 
     def plan(self):
+        """plan."""
         pass
 
     def act(self):
+        """act."""
         pass
 
 
