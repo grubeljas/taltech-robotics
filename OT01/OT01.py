@@ -1,5 +1,6 @@
 import PiBot
 
+
 class Robot:
     def __init__(self):
         """
@@ -7,8 +8,7 @@ class Robot:
         """
         self.robot = PiBot.PiBot()
         self.shutdown = False
-        self.lasers = self.sense()
-        SPEEED = 0
+        
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
@@ -22,19 +22,6 @@ class Robot:
         """
         self.robot = robot
 
-    def sense():
-        self.get_front_lasers()
-
-    def act():
-        self.set_wheels_speed(SPEEED)
-        
-
-    def plan():
-        if self.lasers[0] > 100:
-            SPEEED = 50
-        else:
-            SPEED = -10
-
     def spin(self):
         """
         The main loop of the robot.
@@ -43,13 +30,18 @@ class Robot:
         while not self.shutdown:
             print(f'The time is {self.robot.get_time()}!')
             self.robot.sleep(0.05)
-            self.sense()
-            self.plan()
-            self.act()
             if self.robot.get_time() > 20:
                 self.shutdown = True
 
-    # Add more code...
+    def sense(self):
+        pass
+
+    def plan(self):
+        pass
+
+    def act(self):
+        pass
+
 
 
 def main():
