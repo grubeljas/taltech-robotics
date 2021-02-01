@@ -7,6 +7,8 @@ class Robot:
         """
         self.robot = PiBot.PiBot()
         self.shutdown = False
+        self.lasers = self.sense()
+        SPEEED = 0
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
@@ -21,13 +23,17 @@ class Robot:
         self.robot = robot
 
     def sense():
-        None
+        return self.get_front_lasers()
 
     def act():
-        None
+        self.set_wheels_speed(SPEEED)
+        
 
     def plan():
-        None
+        if self.lasers[0] > 100:
+            SPEEED = 50
+        else:
+            SPEED = -10
 
     def spin(self):
         """
