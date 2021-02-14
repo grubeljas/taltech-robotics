@@ -18,9 +18,8 @@ class Robot:
         self.second_right_line_sensor = 0
         self.center_right_line_sensor = 0
 
-        self.front_left_laser = 0
-        self.front_middle_laser = 0
-        self.front_right_laser = 0
+        self.test1 = self.robot.get_rear_irs()
+        self.test2 = self.robot.get_distance_sensors()
 
         self.left_wheel_speed = 0
         self.right_wheel_speed = 0
@@ -143,6 +142,9 @@ class Robot:
         self.second_right_line_sensor = self.robot.get_second_line_sensor_from_right()
         self.center_right_line_sensor = self.robot.get_third_line_sensor_from_right()
 
+        self.test1 = self.robot.get_rear_irs()
+        self.test2 = self.robot.get_distance_sensors()
+
         self.front_left_laser = self.robot.get_front_left_laser()
         self.front_middle_laser = self.robot.get_front_middle_laser()
         self.front_right_laser = self.robot.get_front_right_laser()
@@ -175,6 +177,8 @@ class Robot:
             print(f'The time is {self.robot.get_time()}!')
             self.sense()
             print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
+            print(f"{self.test1}")
+            print(f"{self.test2}")
             print(f"Front laser: {self.front_middle_laser}")
             print(f"Left laser: {self.front_left_laser}, Right laser: {self.front_right_laser}")
             self.plan()
