@@ -25,6 +25,7 @@ class Robot:
         self.right_wheel_speed = 0
         self.state = "Finding the line"
         self.no_line_counter = 0
+        self.bypass_counter = 0
 
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
@@ -124,11 +125,12 @@ class Robot:
             self.state = "Finding the line"
 
     def do_bypass(self):
+        self.bypass_counter += 1
         if self.front_left_laser < 0.07:
             self.go_straight()
         else:
             self.turn_left()
-        if self.center_right_line_sensor < 400:
+        if self.center_right_line_sensor < 400 and self.bypass_counter :
             self.state = "Finding the line"
 
 
