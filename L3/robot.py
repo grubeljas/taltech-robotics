@@ -150,7 +150,7 @@ class Robot:
 
     def sense(self):
         """Sense - gets all the information."""
-        if self.robot.get_time() % 0.5 == 0:
+        if self.robot.get_time() % 0.1 == 0:
             print(f'The time is {self.robot.get_time()}!')
             self.prev_rear_left_straight = self.rear_left_straight_ir
             self.prev_rear_left_diagonal = self.rear_left_diagonal_ir
