@@ -18,8 +18,22 @@ class Robot:
         self.second_right_line_sensor = 0
         self.center_right_line_sensor = 0
 
-        self.test1 = self.robot.get_rear_irs()
-        self.test2 = self.robot.get_distance_sensors()
+        self.prev_rear_left_straight = 0
+        self.prev_rear_left_diagonal = 0
+        self.prev_rear_left_side = 0
+
+        self.prev_rear_right_straight = 0
+        self.prev_rear_right_diagonal = 0
+        self.prev_rear_right_side = 0
+
+        self.rear_left_straight_ir = self.robot.get_rear_left_straight_ir()
+        self.rear_left_diagonal_ir = self.robot.get_rear_left_diagonal_ir()
+        self.rear_left_side_ir = self.robot.get_rear_left_side_ir()
+
+        self.rear_right_straight_ir = self.robot.get_rear_right_straight_ir()
+        self.rear_right_diagonal_ir = self.robot.get_rear_right_diagonal_ir()
+        self.rear_right_side_ir = self.robot.get_rear_right_side_ir()
+
 
         self.left_wheel_speed = 0
         self.right_wheel_speed = 0
@@ -125,6 +139,7 @@ class Robot:
             self.state = "Finding the line"
 
     def do_bypass(self):
+        """Ride around tha object on the left."""
         self.bypass_counter += 1
         if self.front_left_laser < 0.07:
             self.go_straight()
@@ -133,9 +148,26 @@ class Robot:
         if self.center_right_line_sensor < 400 and self.bypass_counter > 100:
             self.state = "Finding the line"
 
-
     def sense(self):
         """Sense - gets all the information."""
+        if self.robot.get_time() % 0.5 == 0:
+            print(f'The time is {self.robot.get_time()}!')
+            self.prev_rear_left_straight = self.rear_left_straight_ir
+            self.prev_rear_left_diagonal = self.rear_left_diagonal_ir
+            self.prev_rear_left_side = self.rear_left_side_ir
+            self.prev_rear_right_straight = self.rear_right_straight_ir
+            self.prev_rear_right_diagonal = self.rear_right_diagonal_ir
+            self.prev_rear_right_side = self.rear_right_side_ir
+            print(f"INFRARED{self.robot.get_rear_irs()}")
+
+        self.rear_left_straight_ir = self.robot.get_rear_left_straight_ir()
+        self.rear_left_diagonal_ir = self.robot.get_rear_left_diagonal_ir()
+        self.rear_left_side_ir = self.robot.get_rear_left_side_ir()
+
+        self.rear_right_straight_ir = self.robot.get_rear_right_straight_ir()
+        self.rear_right_diagonal_ir = self.robot.get_rear_right_diagonal_ir()
+        self.rear_right_side_ir = self.robot.get_rear_right_side_ir()
+
         self.leftmost_line_sensor = self.robot.get_leftmost_line_sensor()
         self.second_left_line_sensor = self.robot.get_second_line_sensor_from_left()
         self.center_left_line_sensor = self.robot.get_third_line_sensor_from_left()
@@ -143,13 +175,6 @@ class Robot:
         self.rightmost_line_sensor = self.robot.get_rightmost_line_sensor()
         self.second_right_line_sensor = self.robot.get_second_line_sensor_from_right()
         self.center_right_line_sensor = self.robot.get_third_line_sensor_from_right()
-
-        self.test1 = self.robot.get_rear_irs()
-        self.test2 = self.robot.get_distance_sensors()
-
-        self.front_left_laser = self.robot.get_front_left_laser()
-        self.front_middle_laser = self.robot.get_front_middle_laser()
-        self.front_right_laser = self.robot.get_front_right_laser()
 
     def plan(self):
         """Plan - decides what to do based on the information."""
@@ -176,13 +201,9 @@ class Robot:
         This loop is expected to call sense, plan, act methods cyclically.
         """
         while not self.shutdown:
-            print(f'The time is {self.robot.get_time()}!')
+
             self.sense()
-            print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
-            print(f"{self.test1}")
-            print(f"{self.test2}")
-            print(f"Front laser: {self.front_middle_laser}")
-            print(f"Left laser: {self.front_left_laser}, Right laser: {self.front_right_laser}")
+            #print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
             self.plan()
             self.act()
             self.robot.sleep(0.05)
