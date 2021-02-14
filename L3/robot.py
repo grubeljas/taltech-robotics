@@ -129,8 +129,8 @@ class Robot:
         elif line_direction == "absent":
             self.no_line_counter += 1
             print(f"No line counter = {self.no_line_counter}")
-        if self.front_middle_laser < 0.15:
-            self.turn_right()
+        if self.rear_right_straight_ir < 400:
+            self.turn_left()
             self.state = "Bypassing"
 
         if self.no_line_counter > 0 and line_direction != "absent":
@@ -141,7 +141,7 @@ class Robot:
     def do_bypass(self):
         """Ride around tha object on the left."""
         self.bypass_counter += 1
-        if self.front_left_laser < 0.07:
+        if self.rear_left_diagonal_ir < 0.07:
             self.go_straight()
         else:
             self.turn_left()
