@@ -1,4 +1,4 @@
-"""L2."""
+"""L3."""
 import PiBot
 
 
@@ -18,19 +18,13 @@ class Robot:
         self.second_right_line_sensor = 0
         self.center_right_line_sensor = 0
 
-        self.line_direction = None
-        self.next_crossroad_turn = "left"
-        self.possibly_on_crossroad = False
+        self.front_left_laser = 0
+        self.front_middle_laser = 0
+        self.front_right_laser = 0
 
         self.left_wheel_speed = 0
         self.right_wheel_speed = 0
 
-        self.state = "Finding the line"
-        self.got_off_the_line = False
-        self.no_line_counter = 0
-        self.crossroad_counter = 0
-        self.left_crossroad_counter = 0
-        self.right_crossroad_counter = 0
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
@@ -76,36 +70,9 @@ class Robot:
             self.state = "Following the line"
         elif self.rightmost_line_sensor < 400 or self.second_right_line_sensor < 400:
             self.turn_right()
-        else:
+        elif self.leftmost_line_sensor < 400 or self.second_left_line_sensor < 400:
             self.turn_left()
 
-    def find_the_crossroads(self):
-        """Instruction for robot to find a crossroad."""
-        if self.leftmost_line_sensor < 400:
-            self.left_crossroad_counter += 1
-        if self.rightmost_line_sensor < 400:
-            self.right_crossroad_counter += 1
-
-        if self.left_crossroad_counter > 0 or self.right_crossroad_counter > 0:
-            self.crossroad_counter += 1
-
-        if self.crossroad_counter > 25:
-            self.possibly_on_crossroad = False
-        elif self.crossroad_counter > 0:
-            self.possibly_on_crossroad = True
-
-        if self.crossroad_counter > 100 and self.left_crossroad_counter > 2 and self.right_crossroad_counter > 2:
-            self.left_crossroad_counter = 0
-            self.right_crossroad_counter = 0
-            self.crossroad_counter = 0
-            self.possibly_on_crossroad = False
-            return True
-        elif self.crossroad_counter > 100:
-            self.left_crossroad_counter = 0
-            self.right_crossroad_counter = 0
-            self.crossroad_counter = 0
-            self.possibly_on_crossroad = False
-        return False
 
     def get_line_direction(self):
         """
@@ -149,36 +116,22 @@ class Robot:
         elif line_direction == "absent":
             self.no_line_counter += 1
             print(f"No line counter = {self.no_line_counter}")
+        if self.front_middle_laser == 15:
+            self.turn_right()
+            self.state = "Bypassing"
 
         if self.no_line_counter > 0 and line_direction != "absent":
             self.no_line_counter = 0
         elif self.no_line_counter > 50:
             self.state = "Finding the line"
 
-    def turn_on_crossroad(self):
-        """Instruction for robot to turn on a crossroad."""
-        print(f"On a crossroad, turning {self.next_crossroad_turn}")
-        if self.next_crossroad_turn == "left":
-            self.turn_left()
-        elif self.next_crossroad_turn == "right":
-            self.turn_right()
-        elif self.next_crossroad_turn == "straight":
+    def do_bypass(self):
+        self.find_the_line()
+        if self.front_left_laser < 15:
             self.go_straight()
-
-        if self.next_crossroad_turn == "straight":
-            if self.leftmost_line_sensor > 400 and self.rightmost_line_sensor > 400:
-                self.state = "Following the line"
-                self.next_crossroad_turn = "right"
         else:
-            if self.get_line_direction() == "absent":
-                self.got_off_the_line = True
-            elif self.got_off_the_line and self.get_line_direction() != "absent":
-                self.got_off_the_line = False
-                self.state = "Following the line"
-                if self.next_crossroad_turn == "left":
-                    self.next_crossroad_turn = "straight"
-                else:
-                    self.next_crossroad_turn = "left"
+            self.turn_left()
+
 
     def sense(self):
         """Sense - gets all the information."""
@@ -190,14 +143,18 @@ class Robot:
         self.second_right_line_sensor = self.robot.get_second_line_sensor_from_right()
         self.center_right_line_sensor = self.robot.get_third_line_sensor_from_right()
 
+        self.front_left_laser = self.robot.get_front_left_laser()
+        self.front_middle_laser = self.robot.get_front_middle_laser()
+        self.front_right_laser = self.robot.get_front_right_laser()
+
     def plan(self):
         """Plan - decides what to do based on the information."""
         if self.state == "Finding the line":
             self.find_the_line()
         elif self.state == "Following the line":
             self.follow_the_line()
-        elif self.state == "On a crossroad":
-            self.turn_on_crossroad()
+        elif self.state == "Bypassing":
+            self.do_bypass()
 
         if self.shutdown:
             self.left_wheel_speed = 0
@@ -215,9 +172,11 @@ class Robot:
         This loop is expected to call sense, plan, act methods cyclically.
         """
         while not self.shutdown:
-            #  print(f'The time is {self.robot.get_time()}!')
+            print(f'The time is {self.robot.get_time()}!')
             self.sense()
-            #  print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
+            print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
+            print(f"Front laser: {self.front_middle_laser}")
+            print(f"Left laser: {self.front_left_laser}, Right laser: {self.front_right_laser}")
             self.plan()
             self.act()
             self.robot.sleep(0.05)
