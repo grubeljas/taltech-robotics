@@ -71,7 +71,7 @@ class Robot:
             self.state = "Following the line"
         elif self.rightmost_line_sensor < 400 or self.second_right_line_sensor < 400:
             self.turn_right()
-        elif self.leftmost_line_sensor < 400 or self.second_left_line_sensor < 400:
+        else:
             self.turn_left()
 
 
@@ -127,11 +127,12 @@ class Robot:
             self.state = "Finding the line"
 
     def do_bypass(self):
-        self.find_the_line()
         if self.front_left_laser < 15:
             self.go_straight()
         else:
             self.turn_left()
+        if self.center_right_line_sensor < 400:
+            self.state = "Finding the line"
 
 
     def sense(self):
