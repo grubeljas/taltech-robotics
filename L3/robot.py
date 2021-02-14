@@ -24,6 +24,7 @@ class Robot:
 
         self.left_wheel_speed = 0
         self.right_wheel_speed = 0
+        self.state = "Finding the line"
 
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
