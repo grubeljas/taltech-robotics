@@ -130,7 +130,7 @@ class Robot:
             self.go_straight()
         else:
             self.turn_left()
-        if self.center_right_line_sensor < 400 and self.bypass_counter :
+        if self.center_right_line_sensor < 400 and self.bypass_counter > 100:
             self.state = "Finding the line"
 
 
