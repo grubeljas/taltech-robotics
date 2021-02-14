@@ -140,17 +140,17 @@ class Robot:
 
     def do_bypass(self):
         """Ride around tha object on the left."""
+        print("Bypass")
         self.bypass_counter += 1
         if self.rear_left_diagonal_ir < 0.07:
             self.go_straight()
         else:
             self.turn_left()
-        if self.center_right_line_sensor < 400 and self.bypass_counter > 100:
             self.state = "Finding the line"
 
     def sense(self):
         """Sense - gets all the information."""
-        if self.robot.get_time() % 0.1 == 0:
+        if self.robot.get_time() % 0.1 < 0.05:
             print(f'The time is {self.robot.get_time()}!')
             self.prev_rear_left_straight = self.rear_left_straight_ir
             self.prev_rear_left_diagonal = self.rear_left_diagonal_ir
