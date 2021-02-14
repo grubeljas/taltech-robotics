@@ -100,11 +100,8 @@ class Robot:
 
     def follow_the_line(self):
         """Instruction for robot to follow the line."""
-        if self.find_the_crossroads():
-            self.state = "On a crossroad"
-
         line_direction = self.get_line_direction()
-        if line_direction == "straight" or self.possibly_on_crossroad:
+        if line_direction == "straight":
             self.go_straight()
         elif line_direction == "right":
             self.gradual_turn_right()
