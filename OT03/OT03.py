@@ -1,5 +1,5 @@
 """OT03 - Instantaneous velocity."""
-import PiBot
+from robot import PiBot
 
 
 class Robot:
@@ -7,13 +7,13 @@ class Robot:
 
     def __init__(self):
         """Class constructor."""
-        self.robot = PiBot.PiBot()
+        self.robot = PiBot()
         self.shutdown = False
         self.wheel = self.robot.WHEEL_DIAMETER / 2
         self.right = 0
         self.left = 0
 
-    def set_robot(self, robot: PiBot.PiBot()) -> None:
+    def set_robot(self, robot: PiBot()) -> None:
         """Set robot reference."""
         self.robot = robot
 
@@ -57,11 +57,15 @@ class Robot:
                 self.shutdown = True
 
 
-def main():
-    """Main entry."""
+def test():
     robot = Robot()
-    robot.spin()
+    import constant_slow
+    data = constant_slow.get_data()
+    robot.robot.load_velocity_profile(data)
+    for i in range(len(data)):
+        print(f"left_encoder = {robot.robot.get_left_wheel_encoder()}")
+        robot.robot.sleep(0.05)
 
 
 if __name__ == "__main__":
-    main()
+    test()
