@@ -23,6 +23,9 @@ class Robot:
         self.left_wheel_speed = 0
         self.right_wheel_speed = 0
 
+        self.state = "Finding the line"
+        self.no_line_counter = 0
+
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
         Set the reference to the robot instance.
@@ -35,6 +38,18 @@ class Robot:
         """
         self.robot = robot
 
+    def find_the_line(self):
+        """Instruction for robot to find the line."""
+        if self.center_left_line_sensor < 400 and self.center_right_line_sensor < 400:
+            print("Line found!")
+            self.state = "Following the line"
+        elif self.leftmost_line_sensor < 400 or self.second_left_line_sensor < 400:
+            self.left_wheel_speed = -8
+            self.right_wheel_speed = 8
+        else:
+            self.left_wheel_speed = 8
+            self.right_wheel_speed = -8
+
     def get_line_direction(self):
         """
         Return the direction of the line based on sensor readings.
@@ -44,13 +59,36 @@ class Robot:
            straight: Robot is on the line (i.e., the robot should not turn to stay on the line)
            left: Line is on the left (i.e., the robot should turn left to reach the line again)
         """
-        if self.center_left_line_sensor < 400 and self.center_right_line_sensor < 400:
+        if self.center_left_line_sensor < 400 or self.center_right_line_sensor < 400:
             self.line_direction = "straight"
         elif self.leftmost_line_sensor < 400 or self.second_left_line_sensor < 400:
             self.line_direction = "left"
         elif self.rightmost_line_sensor < 400 or self.second_right_line_sensor < 400:
             self.line_direction = "right"
+        else:
+            self.line_direction = "absent"
         return self.line_direction
+
+    def follow_the_line(self):
+        """Instruction for robot to follow the line."""
+        line_direction = self.get_line_direction()
+        if line_direction == "straight":
+            self.left_wheel_speed = 8
+            self.right_wheel_speed = 8
+        elif line_direction == "right":
+            self.left_wheel_speed = 8
+            self.right_wheel_speed = -8
+        elif line_direction == "left":
+            self.left_wheel_speed = -8
+            self.right_wheel_speed = 8
+        elif line_direction == "absent":
+            self.no_line_counter += 1
+            print(f"No line counter = {self.no_line_counter}")
+
+        if self.no_line_counter > 0 and line_direction != "absent":
+            self.no_line_counter = 0
+        elif self.no_line_counter > 50:
+            self.shutdown = True
 
     def sense(self):
         """Sense - gets all the information."""
@@ -65,16 +103,11 @@ class Robot:
 
     def plan(self):
         """Plan - decides what to do based on the information."""
-        line_direction = self.get_line_direction()
-        if line_direction == "straight":
-            self.left_wheel_speed = 9
-            self.right_wheel_speed = 9
-        elif line_direction == "right":
-            self.left_wheel_speed = 8
-            self.right_wheel_speed = -8
-        elif line_direction == "left":
-            self.left_wheel_speed = -8
-            self.right_wheel_speed = 8
+        if self.state == "Finding the line":
+            self.find_the_line()
+        elif self.state == "Following the line":
+            self.follow_the_line()
+
         if self.shutdown:
             self.left_wheel_speed = 0
             self.right_wheel_speed = 0
