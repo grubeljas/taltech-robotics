@@ -7,13 +7,13 @@ class Robot:
 
     def __init__(self):
         """Class constructor."""
-        self.robot = PiBot()
+        self.robot = PiBot.PiBot()
         self.shutdown = False
         self.wheel = self.robot.WHEEL_DIAMETER / 2
         self.right = 0
         self.left = 0
 
-    def set_robot(self, robot: PiBot()) -> None:
+    def set_robot(self, robot: PiBot.PiBot()) -> None:
         """Set robot reference."""
         self.robot = robot
 
@@ -58,6 +58,7 @@ class Robot:
 
 
 def test():
+    """Test."""
     robot = Robot()
     import constant_slow
     data = constant_slow.get_data()
