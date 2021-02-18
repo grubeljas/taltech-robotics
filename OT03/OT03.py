@@ -57,16 +57,5 @@ class Robot:
                 self.shutdown = True
 
 
-def test():
-    """Test."""
-    robot = Robot()
-    import constant_slow
-    data = constant_slow.get_data()
-    robot.robot.load_velocity_profile(data)
-    for i in range(len(data)):
-        print(f"left_encoder = {robot.robot.get_left_wheel_encoder()}")
-        robot.robot.sleep(0.05)
-
-
 if __name__ == "__main__":
-    test()
+    Robot.spin()
