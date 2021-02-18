@@ -132,7 +132,7 @@ class Robot:
             print(f"{self.all}")
             self.plan()
             self.act()
-            self.robot.sleep(0.05)
+            self.robot.sleep(0.1)
             if self.robot.get_time() > 2000:
                 self.shutdown = True
 
