@@ -17,6 +17,7 @@ class Robot:
         self.rightmost_line_sensor = 0
         self.second_right_line_sensor = 0
         self.center_right_line_sensor = 0
+        self.all = []
 
         self.line_direction = None
 
@@ -93,6 +94,7 @@ class Robot:
     def sense(self):
         """Sense - gets all the information."""
         print("Getting info!")
+        self.all = self.robot.get_line_sensors()
         self.leftmost_line_sensor = self.robot.get_leftmost_line_sensor()
         self.second_left_line_sensor = self.robot.get_second_line_sensor_from_left()
         self.center_left_line_sensor = self.robot.get_third_line_sensor_from_left()
@@ -127,6 +129,7 @@ class Robot:
             print(f'The time is {self.robot.get_time()}!')
             self.sense()
             print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
+            print(f"{self.all}")
             self.plan()
             self.act()
             self.robot.sleep(0.05)
