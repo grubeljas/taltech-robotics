@@ -129,6 +129,7 @@ class Robot:
             print(f'The time is {self.robot.get_time()}!')
             self.sense()
             print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
+            print(f"{self.center_right_line_sensor} правый по середине")
             print(f"{self.all}")
             self.plan()
             self.act()
