@@ -88,7 +88,7 @@ class Robot:
         """Instruction for robot to follow the line."""
         line_direction = self.get_line_direction()
         if line_direction == "straight":
-            if line_direction == self.prev_dir and not self.robot.robot.is_simulation():
+            if line_direction == self.prev_dir and not self.simulation:
                 if self.get_left_velocity() > self.get_right_velocity():
                     self.r += 1
                 elif self.get_left_velocity() < self.get_right_velocity():
@@ -96,7 +96,7 @@ class Robot:
             self.left_wheel_speed = 10 + self.l
             self.right_wheel_speed = 10 + self.r
         elif line_direction == "right":
-            if line_direction == self.prev_dir and not self.robot.robot.is_simulation():
+            if line_direction == self.prev_dir and not self.simulation:
                 if self.get_left_velocity() + self.get_right_velocity() > 0:
                     self.r -= 1
                     self.l += 1
@@ -106,7 +106,7 @@ class Robot:
             self.left_wheel_speed = 8 + self.l
             self.right_wheel_speed = -8 + self.r
         elif line_direction == "left":
-            if line_direction == self.prev_dir and not self.robot.robot.is_simulation():
+            if line_direction == self.prev_dir and not self.simulation:
                 if self.get_left_velocity() + self.get_right_velocity() > 0:
                     self.r += 1
                     self.l -= 1
@@ -133,7 +133,8 @@ class Robot:
         """
         velocity = 0
         if self.robot.get_time() != 0:
-            velocity = (self.left_encoder - self.previous_left) / 360 * self.wheel_size / (self.time - self.previous_time)
+            velocity = (self.left_encoder - self.previous_left) / 360 * self.wheel_size /\
+                       (self.time - self.previous_time)
         return velocity
 
     def get_right_velocity(self) -> float:
@@ -145,7 +146,8 @@ class Robot:
         """
         velocity = 0
         if self.robot.get_time() != 0:
-            velocity = (self.right_encoder - self.previous_right) / 360 * self.wheel_size / (self.time - self.previous_time)
+            velocity = (self.right_encoder - self.previous_right) / 360 * self.wheel_size / \
+                       (self.time - self.previous_time)
         return velocity
 
     def sense(self):
