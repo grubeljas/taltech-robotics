@@ -17,7 +17,6 @@ class Robot:
         self.rightmost_line_sensor = 0
         self.second_right_line_sensor = 0
         self.center_right_line_sensor = 0
-        self.all = []
 
         self.line_direction = None
 
@@ -60,7 +59,7 @@ class Robot:
            straight: Robot is on the line (i.e., the robot should not turn to stay on the line)
            left: Line is on the left (i.e., the robot should turn left to reach the line again)
         """
-        if self.center_left_line_sensor < 400 and self.center_right_line_sensor < 400:
+        if self.center_left_line_sensor < 400 or self.center_right_line_sensor < 400:
             self.line_direction = "straight"
         elif self.leftmost_line_sensor < 400 or self.second_left_line_sensor < 400:
             self.line_direction = "left"
@@ -102,9 +101,6 @@ class Robot:
         self.second_right_line_sensor = self.robot.get_second_line_sensor_from_right()
         self.center_right_line_sensor = self.robot.get_third_line_sensor_from_right()
 
-        self.all = self.robot.get_left_line_sensors()
-        self.all += [self.center_right_line_sensor, self.second_right_line_sensor, self.rightmost_line_sensor]
-
     def plan(self):
         """Plan - decides what to do based on the information."""
         if self.state == "Finding the line":
@@ -131,11 +127,9 @@ class Robot:
             print(f'The time is {self.robot.get_time()}!')
             self.sense()
             print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
-            print(f"{self.center_right_line_sensor} правый по середине")
-            print(f"{self.all}")
             self.plan()
             self.act()
-            self.robot.sleep(0.1)
+            self.robot.sleep(0.05)
             if self.robot.get_time() > 2000:
                 self.shutdown = True
 
