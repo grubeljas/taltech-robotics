@@ -74,12 +74,12 @@ class Robot:
            left: Line is on the left (i.e., the robot should turn left to reach the line again)
         """
         self.prev_dir = self.line_direction
-        if self.center_left_line_sensor < 400 or self.center_right_line_sensor < 400:
-            self.line_direction = "straight"
-        elif self.leftmost_line_sensor < 400 or self.second_left_line_sensor < 400:
+        if self.leftmost_line_sensor < 400 or self.second_left_line_sensor < 400:
             self.line_direction = "left"
         elif self.rightmost_line_sensor < 400 or self.second_right_line_sensor < 400:
             self.line_direction = "right"
+        elif self.center_left_line_sensor < 400 or self.center_right_line_sensor < 400:
+            self.line_direction = "straight"
         else:
             self.line_direction = "absent"
         return self.line_direction
