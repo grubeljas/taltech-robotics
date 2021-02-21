@@ -74,7 +74,7 @@ class Robot:
            left: Line is on the left (i.e., the robot should turn left to reach the line again)
         """
         self.prev_dir = self.line_direction
-        if self.center_left_line_sensor < 400 or self.center_right_line_sensor < 400:
+        if self.center_left_line_sensor < 400 and self.center_right_line_sensor < 400:
             self.line_direction = "straight"
         elif self.leftmost_line_sensor < 400 or self.second_left_line_sensor < 400:
             self.line_direction = "left"
@@ -88,7 +88,7 @@ class Robot:
         """Instruction for robot to follow the line."""
         line_direction = self.get_line_direction()
         if line_direction == "straight":
-            if line_direction == self.prev_dir:
+            if line_direction == self.prev_dir and not self.robot.robot.is_simulation():
                 if self.get_left_velocity() > self.get_right_velocity():
                     self.r += 1
                 elif self.get_left_velocity() < self.get_right_velocity():
@@ -96,7 +96,7 @@ class Robot:
             self.left_wheel_speed = 10 + self.l
             self.right_wheel_speed = 10 + self.r
         elif line_direction == "right":
-            if line_direction == self.prev_dir:
+            if line_direction == self.prev_dir and not self.robot.robot.is_simulation():
                 if self.get_left_velocity() + self.get_right_velocity() > 0:
                     self.r -= 1
                     self.l += 1
@@ -106,7 +106,7 @@ class Robot:
             self.left_wheel_speed = 8 + self.l
             self.right_wheel_speed = -8 + self.r
         elif line_direction == "left":
-            if line_direction == self.prev_dir:
+            if line_direction == self.prev_dir and not self.robot.robot.is_simulation():
                 if self.get_left_velocity() + self.get_right_velocity() > 0:
                     self.r += 1
                     self.l -= 1
