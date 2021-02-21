@@ -103,7 +103,7 @@ class Robot:
         self.center_right_line_sensor = self.robot.get_third_line_sensor_from_right()
 
         self.all = self.robot.get_left_line_sensors()
-        self.all += [self.center_right_line_sensor + self.second_right_line_sensor + self.rightmost_line_sensor]
+        self.all += [self.center_right_line_sensor, self.second_right_line_sensor, self.rightmost_line_sensor]
 
     def plan(self):
         """Plan - decides what to do based on the information."""
