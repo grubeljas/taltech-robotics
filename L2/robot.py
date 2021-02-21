@@ -161,12 +161,15 @@ class Robot:
             self.go_straight()
             self.straight_counter += 1
 
+        self.turn_on_crossroads2(line_direction, current_turn_angle)
+
+    def turn_on_crossroads2(self, line_direction, angle):
         if self.crossroad_turn == "straight" and self.crossed_line_on_right and self.crossed_line_on_left and \
                 self.straight_counter > 30:
             self.crossroad_turn = "right"
             self.state = "Following the line"
             self.straight_counter = 0
-        elif line_direction == "straight" and current_turn_angle > 40:
+        elif line_direction == "straight" and angle > 40:
             self.state = "Following the line"
             if self.crossroad_turn == "left":
                 self.crossroad_turn = "straight"
