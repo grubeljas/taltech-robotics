@@ -60,7 +60,7 @@ class Robot:
            straight: Robot is on the line (i.e., the robot should not turn to stay on the line)
            left: Line is on the left (i.e., the robot should turn left to reach the line again)
         """
-        if self.center_left_line_sensor < 400 or self.center_right_line_sensor < 400:
+        if self.center_left_line_sensor < 400 and self.center_right_line_sensor < 400:
             self.line_direction = "straight"
         elif self.leftmost_line_sensor < 400 or self.second_left_line_sensor < 400:
             self.line_direction = "left"
@@ -94,7 +94,6 @@ class Robot:
     def sense(self):
         """Sense - gets all the information."""
         print("Getting info!")
-        self.all = self.robot.get_line_sensors()
         self.leftmost_line_sensor = self.robot.get_leftmost_line_sensor()
         self.second_left_line_sensor = self.robot.get_second_line_sensor_from_left()
         self.center_left_line_sensor = self.robot.get_third_line_sensor_from_left()
@@ -102,6 +101,9 @@ class Robot:
         self.rightmost_line_sensor = self.robot.get_rightmost_line_sensor()
         self.second_right_line_sensor = self.robot.get_second_line_sensor_from_right()
         self.center_right_line_sensor = self.robot.get_third_line_sensor_from_right()
+
+        self.all = self.robot.get_left_line_sensors()
+        self.all += [self.center_right_line_sensor + self.second_right_line_sensor + self.rightmost_line_sensor]
 
     def plan(self):
         """Plan - decides what to do based on the information."""
