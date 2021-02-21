@@ -20,7 +20,8 @@ class Robot:
         self.second_right_line_sensor = 0
         self.center_right_line_sensor = 0
         self.all = []
-        self.i = 0
+        self.r = 0
+        self.l = 0
 
         self.line_direction = None
 
@@ -88,10 +89,12 @@ class Robot:
         line_direction = self.get_line_direction()
         if line_direction == "straight":
             if line_direction == self.prev_dir:
-                if self.get_left_velocity() != self.get_right_velocity():
-                    self.i += 1
-            self.left_wheel_speed = 10 + self.i
-            self.right_wheel_speed = 10 + self.i
+                if self.get_left_velocity() > self.get_right_velocity():
+                    self.r += 1
+                elif self.get_left_velocity() < self.get_right_velocity():
+                    self.l += 1
+            self.left_wheel_speed = 10 + self.l
+            self.right_wheel_speed = 10 + self.r
         elif line_direction == "right":
             self.left_wheel_speed = 8
             self.right_wheel_speed = -8
