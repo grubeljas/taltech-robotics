@@ -93,14 +93,31 @@ class Robot:
                     self.r += 1
                 elif self.get_left_velocity() < self.get_right_velocity():
                     self.l += 1
+            else:
+                self.r = 0
+                self.l = 0
             self.left_wheel_speed = 10 + self.l
             self.right_wheel_speed = 10 + self.r
         elif line_direction == "right":
-            self.left_wheel_speed = 8
-            self.right_wheel_speed = -8
+            if line_direction == self.prev_dir:
+                if self.get_left_velocity() + self.get_right_velocity() > 0:
+                    self.r -= 1
+                    self.l += 1
+            else:
+                self.r = 0
+                self.l = 0
+            self.left_wheel_speed = 8 + self.l
+            self.right_wheel_speed = -8 + self.r
         elif line_direction == "left":
-            self.left_wheel_speed = -8
-            self.right_wheel_speed = 8
+            if line_direction == self.prev_dir:
+                if self.get_left_velocity() + self.get_right_velocity() > 0:
+                    self.r += 1
+                    self.l -= 1
+            else:
+                self.r = 0
+                self.l = 0
+            self.left_wheel_speed = -8 + self.l
+            self.right_wheel_speed = 8 + self.r
         elif line_direction == "absent":
             self.no_line_counter += 1
             print(f"No line counter = {self.no_line_counter}")
