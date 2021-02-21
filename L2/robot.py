@@ -29,6 +29,7 @@ class Robot:
         self.no_line_counter = 0
         self.crossed_line_on_left = False
         self.crossed_line_on_right = False
+        self.straight_counter = 0
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
@@ -158,10 +159,13 @@ class Robot:
 
         if self.crossroad_turn == "straight":
             self.go_straight()
+            self.straight_counter += 1
 
-        if self.crossroad_turn == "straight" and self.crossed_line_on_right and self.crossed_line_on_left:
+        if self.crossroad_turn == "straight" and self.crossed_line_on_right and self.crossed_line_on_left and \
+                self.straight_counter > 30:
             self.crossroad_turn = "right"
             self.state = "Following the line"
+            self.straight_counter = 0
         elif line_direction == "straight" and current_turn_angle > 40:
             self.state = "Following the line"
             if self.crossroad_turn == "left":
