@@ -118,7 +118,7 @@ class Robot:
         """
         velocity = 0
         if self.robot.get_time() != 0:
-            velocity = (self.left - self.previous_left) / 360 * self.wheel_size / (self.time - self.previous_time)
+            velocity = (self.left_encoder - self.previous_left) / 360 * self.wheel_size / (self.time - self.previous_time)
         return velocity
 
     def get_right_velocity(self) -> float:
@@ -130,18 +130,18 @@ class Robot:
         """
         velocity = 0
         if self.robot.get_time() != 0:
-            velocity = (self.right - self.previous_right) / 360 * self.wheel_size / (self.time - self.previous_time)
+            velocity = (self.right_encoder - self.previous_right) / 360 * self.wheel_size / (self.time - self.previous_time)
         return velocity
 
     def sense(self):
         """Sense - gets all the information."""
         print("Getting info!")
-        self.previous_right = self.right
-        self.previous_left = self.left
+        self.previous_right = self.right_encoder
+        self.previous_left = self.left_encoder
         self.previous_time = self.time
 
-        self.right = self.robot.get_right_wheel_encoder()
-        self.left = self.robot.get_left_wheel_encoder()
+        self.right_encoder = self.robot.get_right_wheel_encoder()
+        self.left_encoder = self.robot.get_left_wheel_encoder()
         self.time = self.robot.get_time()
 
         self.leftmost_line_sensor = self.robot.get_leftmost_line_sensor()
