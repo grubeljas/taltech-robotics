@@ -93,9 +93,6 @@ class Robot:
                     self.r += 1
                 elif self.get_left_velocity() < self.get_right_velocity():
                     self.l += 1
-            else:
-                self.r = 0
-                self.l = 0
             self.left_wheel_speed = 10 + self.l
             self.right_wheel_speed = 10 + self.r
         elif line_direction == "right":
