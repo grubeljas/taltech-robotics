@@ -27,6 +27,8 @@ class Robot:
 
         self.state = "Finding the line"
         self.no_line_counter = 0
+        self.crossed_line_on_left = False
+        self.crossed_line_on_right = False
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
@@ -92,7 +94,7 @@ class Robot:
         """
         line_direction = "absent"
 
-        if self.center_left_line_sensor < 200 or self.center_right_line_sensor < 200:
+        if self.center_left_line_sensor < 200 and self.center_right_line_sensor < 200:
             line_direction = "straight"
         elif self.second_right_line_sensor < 200 or self.center_right_line_sensor < 200:
             line_direction = "leaning right"
@@ -137,6 +139,11 @@ class Robot:
         """Instruction for robot to turn on a crossroad."""
         current_turn_angle = 0
         line_direction = self.get_line_direction()
+        if self.rightmost_line_sensor < 200:
+            self.crossed_line_on_right = True
+        if self.leftmost_line_sensor < 200:
+            self.crossed_line_on_left = True
+
         if self.crossroad_turn == "left":
             self.gradual_turn_left()
             if line_direction == "absent":
@@ -152,7 +159,7 @@ class Robot:
         if self.crossroad_turn == "straight":
             self.go_straight()
 
-        if self.crossroad_turn == "straight" and self.rightmost_line_sensor > 200 and self.leftmost_line_sensor > 200:
+        if self.crossroad_turn == "straight" and self.crossed_line_on_right and self.crossed_line_on_left:
             self.crossroad_turn = "right"
             self.state = "Following the line"
         elif line_direction == "straight" and current_turn_angle > 40:
