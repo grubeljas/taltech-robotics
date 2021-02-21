@@ -11,8 +11,7 @@ class Robot:
         self.robot = PiBot.PiBot()
         self.shutdown = False
         self.simulation = self.robot.is_simulation()
-        if self.simulation:
-            self.wheel_size = self.robot.WHEEL_DIAMETER * math.pi
+        self.wheel_size = self.robot.WHEEL_DIAMETER * math.pi
         self.leftmost_line_sensor = 0
         self.second_left_line_sensor = 0
         self.center_left_line_sensor = 0
@@ -29,8 +28,7 @@ class Robot:
         self.right_wheel_speed = 0
 
         self.state = "Finding the line"
-        if self.simulation:
-            self.prev_dir = ""
+        self.prev_dir = ""
         self.no_line_counter = 0
 
         self.right_encoder = 0
@@ -89,9 +87,9 @@ class Robot:
         """Instruction for robot to follow the line."""
         line_direction = self.get_line_direction()
         if line_direction == "straight":
-            if self.simulation and line_direction == self.prev_dir:
+            if line_direction == self.prev_dir:
                 if self.get_left_velocity() != self.get_right_velocity():
-                    self.i += 1
+                    self.i = 1
                 else:
                     self.i = 0
             self.left_wheel_speed = 8 + self.i
