@@ -89,11 +89,9 @@ class Robot:
         if line_direction == "straight":
             if line_direction == self.prev_dir:
                 if self.get_left_velocity() != self.get_right_velocity():
-                    self.i = 1
-                else:
-                    self.i = 0
-            self.left_wheel_speed = 8 + self.i
-            self.right_wheel_speed = 8 + self.i
+                    self.i += 1
+            self.left_wheel_speed = 1 + self.i
+            self.right_wheel_speed = 1 + self.i
         elif line_direction == "right":
             self.left_wheel_speed = 8
             self.right_wheel_speed = -8
