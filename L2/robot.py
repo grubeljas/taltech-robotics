@@ -164,6 +164,7 @@ class Robot:
         self.turn_on_crossroads2(line_direction, current_turn_angle)
 
     def turn_on_crossroads2(self, line_direction, angle):
+        """Instruction 2."""
         if self.crossroad_turn == "straight" and self.crossed_line_on_right and self.crossed_line_on_left and \
                 self.straight_counter > 30:
             self.crossroad_turn = "right"
