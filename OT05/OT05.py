@@ -30,10 +30,14 @@ class Robot:
         list = sorted(self.sensor[:], key=lambda x: x)
         return list[2]
 
+    def sense(self):
+        self.middle = self.get_front_middle_laser()
+
     def spin(self):
         """The spin loop."""
         while not self.shutdown:
-            print(f'Value is {self.get_front_middle_laser()}')
+            self.sense()
+            print(f'Value is {self.middle}')
             self.robot.sleep(0.05)
             if self.robot.get_time() > 20:
                 self.shutdown = True
