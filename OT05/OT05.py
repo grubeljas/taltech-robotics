@@ -10,6 +10,7 @@ class Robot:
         self.robot = PiBot.PiBot()
         self.shutdown = False
         self.sensor = [0, 0, 0, 0, 0]
+        self.middle = 0
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """Set the PiBot reference."""
