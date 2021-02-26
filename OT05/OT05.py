@@ -23,7 +23,7 @@ class Robot:
           None if filter is empty, filtered value otherwise.
         """
         laser_info = self.robot.get_front_middle_laser()
-        if laser_info is None:
+        if laser_info == 0:
             return None
         self.sensor.pop(0)
         self.sensor.append(laser_info)
@@ -31,6 +31,7 @@ class Robot:
         return list[2]
 
     def sense(self):
+        """Sense."""
         self.middle = self.get_front_middle_laser()
 
     def spin(self):
