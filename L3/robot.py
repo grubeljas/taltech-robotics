@@ -33,7 +33,8 @@ class Robot:
         self.state = "Finding the line"
         self.no_line_counter = 0
 
-        self.obstacle_phase = "Turning away"
+        self.obstacle_phase = "Turning back"
+        self.go_back_times = 0
         self.got_off_the_line = False
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
@@ -73,6 +74,11 @@ class Robot:
         self.left_wheel_speed = 8
         self.right_wheel_speed = 0
 
+    def go_back(self):
+        """Robot goes back."""
+        self.right_wheel_speed = -8
+        self.left_wheel_speed = -8
+
     def find_the_line(self):
         """Instruction for robot to find the line."""
         if self.center_left_line_sensor < 400 and self.center_right_line_sensor < 400:
@@ -110,7 +116,6 @@ class Robot:
     def follow_the_line(self):
         """Instruction for robot to follow the line."""
         line_direction = self.get_line_direction()
-
         if line_direction == "straight":
             self.go_straight()
         if line_direction == "leaning right":
@@ -121,6 +126,8 @@ class Robot:
             self.turn_right()
         if line_direction == "hard left":
             self.turn_left()
+        if line_direction == "back":
+            self.go_back()
 
         if line_direction == "absent":
             self.no_line_counter += 1
@@ -130,13 +137,18 @@ class Robot:
         if self.no_line_counter > 500:
             self.state = "Finding the line"
 
-        if self.front_middle_laser < 0.08:
+        if self.front_middle_laser < 0.01:
             self.state = "Avoiding obstacle"
             print(self.state)
             self.starting_orientation = self.current_orientation
 
     def avoid_obstacle(self):
         """Avoid obstacle."""
+        if self.obstacle_phase == "Turning back":
+            if self.go_back_times > 10:
+                self.obstacle_phase = "Turning away"
+            self.go_back()
+            self.go_back_times += 1
         if self.obstacle_phase == "Turning away":
             if abs(self.starting_orientation - self.current_orientation) > 85:
                 self.obstacle_phase = "Moving around"
@@ -180,7 +192,6 @@ class Robot:
 
         self.front_middle_laser = self.robot.get_front_middle_laser()
         self.front_right_laser = self.robot.get_front_right_laser()
-        self.right_ir = self.robot.get_rear_right_side_ir()
 
     def plan(self):
         """Plan - decides what to do based on the information."""
@@ -209,6 +220,8 @@ class Robot:
         while not self.shutdown:
             #  print(f'The time is {self.robot.get_time()}!')
             self.sense()
+            print(self.front_right_laser)
+            print(self.front_middle_laser)
             #  print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
             self.plan()
             self.act()
