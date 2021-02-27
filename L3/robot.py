@@ -174,7 +174,7 @@ class Robot:
             self.go_straight()
         elif self.front_right_laser == 2.0:
             self.counter = 0
-            self.gradual_turn_right()
+            self.turn_right()
         if self.get_line_direction() != "absent":
             self.obstacle_phase = "Back on track"
             self.starting_orientation = self.current_orientation
