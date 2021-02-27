@@ -150,7 +150,7 @@ class Robot:
             self.go_back()
             self.go_back_times += 1
         if self.obstacle_phase == "Turning away":
-            if abs(self.starting_orientation - self.current_orientation) > 75:
+            if abs(self.starting_orientation - self.current_orientation) > 65:
                 self.obstacle_phase = "Moving around"
                 self.right_ir_initial = self.right_ir
             else:
@@ -222,7 +222,7 @@ class Robot:
         while not self.shutdown:
             #  print(f'The time is {self.robot.get_time()}!')
             self.sense()
-            print(f"Middle:{self.front_right_laser}")
+            print(f"Right:{self.front_right_laser}")
             print(f"Middle:{self.front_middle_laser}")
             #  print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
             self.plan()
