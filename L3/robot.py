@@ -137,7 +137,7 @@ class Robot:
         if self.no_line_counter > 500:
             self.state = "Finding the line"
 
-        if self.front_middle_laser < 0.02:
+        if self.front_middle_laser < 0.06:
             self.state = "Avoiding obstacle"
             print(self.state)
             self.starting_orientation = self.current_orientation
