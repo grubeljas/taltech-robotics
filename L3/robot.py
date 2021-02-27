@@ -168,13 +168,13 @@ class Robot:
     def move_around(self):
         """Move around."""
         print(self.right_ir)
-        if self.front_right_laser < 2.0 or self.counter < 20:
+        if self.front_right_laser < 2.0 and self.counter < 20:
             if self.front_right_laser == 2.0:
                 self.counter += 1
             self.go_straight()
         elif self.front_right_laser == 2.0:
             self.counter = 0
-            self.turn_right()
+            self.gradual_turn_right()
         if self.get_line_direction() != "absent":
             self.obstacle_phase = "Back on track"
             self.starting_orientation = self.current_orientation
