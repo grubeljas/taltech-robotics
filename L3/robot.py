@@ -34,7 +34,7 @@ class Robot:
         self.no_line_counter = 0
 
         self.obstacle_phase = "Turning back"
-        self.go_back_times = 0
+        self.counter = 0
         self.got_off_the_line = False
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
@@ -145,14 +145,14 @@ class Robot:
     def avoid_obstacle(self):
         """Avoid obstacle."""
         if self.obstacle_phase == "Turning back":
-            if self.go_back_times > 10:
-                self.obstacle_phase = "Turning away"
             self.go_back()
-            self.go_back_times += 1
+            self.counter += 1
+            if self.counter > 10:
+                self.obstacle_phase = "Turning away"
+                self.counter = 0
         if self.obstacle_phase == "Turning away":
             if abs(self.starting_orientation - self.current_orientation) > 65:
                 self.obstacle_phase = "Moving around"
-                self.right_ir_initial = self.right_ir
             else:
                 self.turn_left()
 
@@ -168,14 +168,13 @@ class Robot:
     def move_around(self):
         """Move around."""
         print(self.right_ir)
-        if self.right_ir_initial - 20 < self.right_ir < self.right_ir_initial + 20:
+        if self.front_right_laser < 2.0 or self.counter < 20:
+            if self.front_right_laser == 2.0:
+                self.counter += 1
             self.go_straight()
-        elif self.right_ir < self.right_ir_initial - 100:
-            self.go_straight()
-        elif self.right_ir < self.right_ir_initial - 20:
-            self.gradual_turn_right()
-        elif self.right_ir > self.right_ir_initial + 20:
-            self.gradual_turn_left()
+        elif self.front_right_laser == 2.0:
+            self.counter = 0
+            self.turn_right()
         if self.get_line_direction() != "absent":
             self.obstacle_phase = "Back on track"
             self.starting_orientation = self.current_orientation
