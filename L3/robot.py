@@ -150,25 +150,14 @@ class Robot:
             self.go_back()
             self.go_back_times += 1
         if self.obstacle_phase == "Turning away":
-            if abs(self.starting_orientation - self.current_orientation) > 85:
+            if abs(self.starting_orientation - self.current_orientation) > 75:
                 self.obstacle_phase = "Moving around"
                 self.right_ir_initial = self.right_ir
             else:
                 self.turn_left()
 
         if self.obstacle_phase == "Moving around":
-            print(self.right_ir)
-            if self.right_ir_initial - 20 < self.right_ir < self.right_ir_initial + 20:
-                self.go_straight()
-            elif self.right_ir < self.right_ir_initial - 100:
-                self.go_straight()
-            elif self.right_ir < self.right_ir_initial - 20:
-                self.gradual_turn_right()
-            elif self.right_ir > self.right_ir_initial + 20:
-                self.gradual_turn_left()
-            if self.get_line_direction() != "absent":
-                self.obstacle_phase = "Back on track"
-                self.starting_orientation = self.current_orientation
+            self.move_around()
 
         if self.obstacle_phase == "Back on track":
             self.turn_left()
@@ -176,7 +165,20 @@ class Robot:
                 self.state = "Following the line"
                 self.obstacle_phase = "Turning away"
 
-        pass
+    def move_around(self):
+        """Move around."""
+        print(self.right_ir)
+        if self.right_ir_initial - 20 < self.right_ir < self.right_ir_initial + 20:
+            self.go_straight()
+        elif self.right_ir < self.right_ir_initial - 100:
+            self.go_straight()
+        elif self.right_ir < self.right_ir_initial - 20:
+            self.gradual_turn_right()
+        elif self.right_ir > self.right_ir_initial + 20:
+            self.gradual_turn_left()
+        if self.get_line_direction() != "absent":
+            self.obstacle_phase = "Back on track"
+            self.starting_orientation = self.current_orientation
 
     def sense(self):
         """Sense - gets all the information."""
@@ -220,8 +222,8 @@ class Robot:
         while not self.shutdown:
             #  print(f'The time is {self.robot.get_time()}!')
             self.sense()
-            print(self.front_right_laser)
-            print(self.front_middle_laser)
+            print(f"Middle:{self.front_right_laser}")
+            print(f"Middle:{self.front_middle_laser}")
             #  print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
             self.plan()
             self.act()
