@@ -33,7 +33,7 @@ class Robot:
         self.state = "Finding the line"
         self.no_line_counter = 0
 
-        self.obstacle_phase = "Turning back"
+        self.obstacle_phase = "Turning away"
         self.counter = 0
         self.got_off_the_line = False
 
@@ -173,12 +173,12 @@ class Robot:
             if self.front_right_laser == 2.0:
                 self.counter += 1
             self.go_straight()
-            if self.counter > 120:
+            if self.counter > 130:
                 self.counter = 0
                 self.move_around_phase = "Turn right"
         elif self.move_around_phase == "Turn right":
-            self.gradual_turn_right()
-            if self.front_right_laser < 0.2:
+            self.turn_right()
+            if self.front_right_laser < 0.23:
                 self.move_around_phase == "Go straight"
         if self.get_line_direction() != "absent":
             self.obstacle_phase = "Back on track"
