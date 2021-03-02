@@ -173,7 +173,7 @@ class Robot:
             if self.front_right_laser == 2.0:
                 self.counter += 1
             self.go_straight()
-            if self.counter > 100:
+            if self.counter > 120:
                 self.counter = 0
                 self.move_around_phase = "Turn right"
         elif self.move_around_phase == "Turn right":
