@@ -1,4 +1,4 @@
-"""O1"""
+"""O1."""
 import PiBot
 
 
@@ -76,7 +76,7 @@ class Robot:
             self.act(-self.speed, self.speed)
 
     def ultra_spin(self):
-        """Make a spin?."""
+        """Make a spin on 90 degrees."""
         print("spin")
         self.act(-self.speed, self.speed)
         self.robot.sleep(5)
