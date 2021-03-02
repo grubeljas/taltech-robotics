@@ -153,7 +153,7 @@ class Robot:
                 self.obstacle_phase = "Turning away"
                 self.counter = 0
         if self.obstacle_phase == "Turning away":
-            if abs(self.starting_orientation - self.current_orientation) > 89:
+            if abs(self.starting_orientation - self.current_orientation) > 88:
                 self.obstacle_phase = "Moving around"
             else:
                 self.turn_left()
@@ -177,7 +177,7 @@ class Robot:
                 self.counter = 0
                 self.move_around_phase = "Turn right"
         elif self.move_around_phase == "Turn right":
-            self.turn_right()
+            self.gradual_turn_right()
             if self.front_right_laser < 0.2:
                 self.move_around_phase == "Go straight"
         if self.get_line_direction() != "absent":
