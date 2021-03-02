@@ -178,7 +178,7 @@ class Robot:
                 self.move_around_phase = "Turn right"
         elif self.move_around_phase == "Turn right":
             self.turn_right()
-            if self.front_right_laser < 0.07:
+            if self.front_right_laser < 0.2:
                 self.move_around_phase == "Go straight"
         if self.get_line_direction() != "absent":
             self.obstacle_phase = "Back on track"
