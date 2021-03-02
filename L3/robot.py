@@ -37,6 +37,8 @@ class Robot:
         self.counter = 0
         self.got_off_the_line = False
 
+        self.move_around_phase = "Go straight"
+
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
         Set the reference to the robot instance.
@@ -163,17 +165,21 @@ class Robot:
             self.turn_left()
             if self.get_line_direction() == "hard right":
                 self.state = "Following the line"
-                self.obstacle_phase = "Turning away"
+                self.obstacle_phase = "Turning back"
 
     def move_around(self):
         """Move around."""
-        print(self.right_ir)
-        if self.front_right_laser < 2.0 or self.counter < 80:
+        if self.move_around_phase == "Go straight":
             if self.front_right_laser == 2.0:
                 self.counter += 1
             self.go_straight()
-        elif self.front_right_laser == 2.0:
-            self.turn_right()
+            if self.counter > 100:
+                self.counter = 0
+                self.move_around_phase = "Turn right"
+        elif self.move_around_phase == "Turn right":
+            self.go_straight()
+            if self.front_right_laser < 1.0:
+                self.move_around_phase == "Go straight"
         if self.get_line_direction() != "absent":
             self.obstacle_phase = "Back on track"
             self.starting_orientation = self.current_orientation
