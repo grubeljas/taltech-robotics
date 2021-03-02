@@ -168,7 +168,7 @@ class Robot:
     def move_around(self):
         """Move around."""
         print(self.right_ir)
-        if self.front_right_laser < 2.0 and self.counter < 20:
+        if self.front_right_laser < 2.0 or self.counter < 100:
             if self.front_right_laser == 2.0:
                 self.counter += 1
             self.go_straight()
