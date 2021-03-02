@@ -220,8 +220,10 @@ class Robot:
         while not self.shutdown:
             #  print(f'The time is {self.robot.get_time()}!')
             self.sense()
-            print(f"Right:{self.front_right_laser}")
-            print(f"Middle:{self.front_middle_laser}")
+            if self.front_right_laser != 2.0:
+                print(f"Right:{self.front_right_laser}")
+            if self.front_middle_laser != 2.0:
+                print(f"Middle:{self.front_middle_laser}")
             #  print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
             self.plan()
             self.act()
