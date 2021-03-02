@@ -149,11 +149,11 @@ class Robot:
         if self.obstacle_phase == "Turning back":
             self.go_back()
             self.counter += 1
-            if self.counter > 5:
+            if self.counter > 0:
                 self.obstacle_phase = "Turning away"
                 self.counter = 0
         if self.obstacle_phase == "Turning away":
-            if abs(self.starting_orientation - self.current_orientation) > 65:
+            if abs(self.starting_orientation - self.current_orientation) > 89:
                 self.obstacle_phase = "Moving around"
             else:
                 self.turn_left()
@@ -183,6 +183,7 @@ class Robot:
         if self.get_line_direction() != "absent":
             self.obstacle_phase = "Back on track"
             self.starting_orientation = self.current_orientation
+        print(self.move_around_phase)
 
     def sense(self):
         """Sense - gets all the information."""
