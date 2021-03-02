@@ -149,7 +149,7 @@ class Robot:
         if self.obstacle_phase == "Turning back":
             self.go_back()
             self.counter += 1
-            if self.counter > 10:
+            if self.counter > 5:
                 self.obstacle_phase = "Turning away"
                 self.counter = 0
         if self.obstacle_phase == "Turning away":
@@ -178,7 +178,7 @@ class Robot:
                 self.move_around_phase = "Turn right"
         elif self.move_around_phase == "Turn right":
             self.go_straight()
-            if self.front_right_laser < 1.0:
+            if self.front_right_laser < 0.07:
                 self.move_around_phase == "Go straight"
         if self.get_line_direction() != "absent":
             self.obstacle_phase = "Back on track"
@@ -223,6 +223,7 @@ class Robot:
 
         This loop is expected to call sense, plan, act methods cyclically.
         """
+        print("New")
         while not self.shutdown:
             #  print(f'The time is {self.robot.get_time()}!')
             self.sense()
