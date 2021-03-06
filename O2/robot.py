@@ -1,136 +1,100 @@
 """O2."""
 import PiBot
-from collections import Counter
 
 
 class Robot:
     """Robot class."""
 
     def __init__(self):
-        """Class constructor."""
+        """Constructor for robot."""
         self.robot = PiBot.PiBot()
         self.shutdown = False
-        # 1 is more recent value
-        self.laser1 = None
-        self.laser2 = None
-        self.laser3 = None
-        self.laser4 = None
-        self.laser5 = None
 
-        self.right_turn = 0
-        self.last_right = None
-        self.right = None
+        # front lasers
+        self.fl = 2
+        self.fm = 2
+        self.fr = 2
 
-        self.left_turn = 0
-        self.last_left = None
-        self.left = None
+        self.left_side = None
+        self.left_diagonal = None
+        self.left_back = None
 
-        self.angle = 0
-        self.added = False
-        self.objects = []
+        self.right_back = None
+        self.right_side = None
+        self.right_diagonal = None
+
+        self.right_wheel = 0
+        self.left_wheel = 0
+
+        self.speed = 8
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
-        """Set Robot reference."""
+        """
+        Set the reference to PiBot object.
+
+        Returns:
+          None
+        """
         self.robot = robot
 
-    def get_objects(self) -> list:
-        """
-        Return the list with the detected objects so far.
-
-        (i.e., add new objects to the list as you detect them).
-
-        Returns:
-          The list with detected object angles, the angles are in
-          degrees [0..360), 0 degrees being the start angle and following
-          the right-hand rule (e.g., turning left 90 degrees is 90, turning
-          right 90 degrees is 270 degrees).
-        """
-        i = self.get_front_middle_laser()
-        if i > 0.5:
-            i = 0.5
-        if i < 0.45 and not self.added and i != 0:
-            self.objects.append(360 - self.angle)
-            self.added = True
-        elif i > 0.45 and self.added:
-            self.added = False
-        return self.objects
-
-    def get_front_middle_laser(self):
-        """
-        Return the filtered value.
-
-        Returns:
-          None if filter is empty, filtered value otherwise.
-        """
-        lista = [self.laser5, self.laser4, self.laser3, self.laser2, self.laser1]
-        lista = list(filter(lambda x: x is not None, lista))
-        lista.sort()
-
-        if not lista:
-            return None
-        else:
-            while len(lista) <= 2:
-                lista.insert(0, 0)
-            return lista[2]
+    def get_state(self) -> str:
+        """Return the current state."""
+        print("------")
+        print("left lasers")
+        print(f"dis {self.left_side} {self.left_diagonal} {self.left_back}")
+        print("right lasers")
+        print(f"dis {self.right_side} {self.right_diagonal} {self.right_back}")
+        print("front lasers")
+        print(f"dis {self.fl} {self.fm} {self.fr}")
 
     def sense(self):
-        """Sense method according to the SPA architecture."""
-        self.laser5 = self.laser4
-        self.laser4 = self.laser3
-        self.laser3 = self.laser2
-        self.laser2 = self.laser1
-        self.laser1 = self.robot.get_front_middle_laser()
+        """Read values from sensors via PiBot  API into class variables (self)."""
+        # front 10-100 cm
+        self.fl = self.robot.get_front_left_laser()
+        self.fm = self.robot.get_front_middle_laser()
+        self.fr = self.robot.get_front_right_laser()
 
-        self.last_left = self.left
-        self.last_right = self.right
-        self.left = self.robot.get_left_wheel_encoder()
-        self.right = self.robot.get_right_wheel_encoder()
+        # 2-16 cm
+        self.left_back = self.robot.get_rear_left_straight_ir()
+        self.left_diagonal = self.robot.get_rear_left_diagonal_ir()
+        self.left_side = self.robot.get_rear_left_side_ir()
 
-        if self.last_left is not None:
-            right_delta = self.right - self.last_right
-            left_delta = self.left - self.last_left
-            if left_delta != 0 or right_delta != 0:
-                self.left_turn += left_delta
-                self.right_turn += right_delta
-                while self.left_turn > 0 and self.right_turn < 0:
-                    self.left_turn -= 1
-                    self.right_turn += 1
-                    self.get_angle(True)
-                while self.left_turn < 0 and self.right_turn > 0:
-                    self.left_turn += 1
-                    self.right_turn -= 1
-                    self.get_angle(False)
-
-    def get_angle(self, right):
-        """."""
-        wd = self.robot.WHEEL_DIAMETER
-        al = self.robot.AXIS_LENGTH
-        a = wd / al
-        if right:
-            self.angle += a
-        else:
-            self.angle -= a
-        pass
-
-    def plan(self):
-        """Plan - decides what to do based on the information."""
-        pass
+        self.right_back = self.robot.get_rear_right_straight_ir()
+        self.right_diagonal = self.robot.get_rear_right_diagonal_ir()
+        self.right_side = self.robot.get_rear_right_side_ir()
 
     def act(self):
-        """Act - does stuff based on the decision made."""
-        self.robot.set_left_wheel_speed(self.left_wheel_speed)
-        self.robot.set_right_wheel_speed(self.right_wheel_speed)
+        """."""
+        self.robot.set_right_wheel_speed(self.right_wheel)
+        self.robot.set_left_wheel_speed(self.left_wheel)
+
+    def plan(self):
+        """Perform the planning steps as required by the problem statement."""
+        if self.fm < 0.55:
+            self.right_wheel, self.left_wheel = self.speed
+            if self.fm <= 0.1:
+                self.ultra_spin()
+                self.shutdown = True
+        else:
+            self.left_wheel = - self.speed
+            self.right_wheel = self.speed
+
+    def ultra_spin(self):
+        """Make a spin on 90 degrees."""
+        print("spin")
+        self.left_wheel = - self.speed
+        self.right_wheel = self.speed
+        self.robot.sleep(5)
+        self.act(0, 0)
 
     def spin(self):
-        """The main loop."""
+        """The main loop of the robot."""
         while not self.shutdown:
             self.sense()
-            print(f'Value is {self.get_front_middle_laser()}')
+            self.get_state()
             self.plan()
             self.act()
             self.robot.sleep(0.05)
-            if self.robot.get_time() > 20:
-                self.shutdown = True
 
 
 def main():
