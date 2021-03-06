@@ -71,7 +71,7 @@ class Robot:
     def plan(self):
         """Perform the planning steps as required by the problem statement."""
         if self.fm < 0.55:
-            self.right_wheel, self.left_wheel = self.speed
+            self.right_wheel, self.left_wheel = self.speed, self.speed
             if self.fm <= 0.1:
                 self.ultra_spin()
                 self.shutdown = True
