@@ -101,7 +101,7 @@ class Robot:
             self.right_wheel = self.speed
             self.act()
             self.robot.sleep(5)
-            self.shutdown = False
+            self.shutdown = True
 
 
 def main():
