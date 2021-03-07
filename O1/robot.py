@@ -107,7 +107,7 @@ class Robot:
 
     def spin(self):
         """The main loop of the robot."""
-        if self.robot.simulation:
+        if self.simulation:
             while not self.shutdown:
                 self.sense()
                 self.get_state()
