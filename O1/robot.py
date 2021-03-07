@@ -9,7 +9,7 @@ class Robot:
         """Constructor for robot."""
         self.robot = PiBot.PiBot()
         self.shutdown = False
-
+        self.simulation = self.robot.is_simulation()
         # front lasers
         self.fl = 2
         self.fm = 2
