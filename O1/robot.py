@@ -63,10 +63,6 @@ class Robot:
     def get_state(self):
         """Return the current state."""
         print("------")
-        # print("left lasers")
-        # print(f"dis {self.left_side} {self.left_diagonal} {self.left_back}")
-        # print("right lasers")
-        # print(f"dis {self.right_side} {self.right_diagonal} {self.right_back}")
         print("front lasers")
         print(f"dis {self.fl} {self.fm} {self.fr}")
         print("indexs")
@@ -85,12 +81,6 @@ class Robot:
         self.lefte = self.robot.get_left_wheel_encoder()
         self.rightep = self.righte
         self.righte = self.robot.get_right_wheel_encoder()
-
-        # # fm
-        # self.fm4 = self.fm3
-        # self.fm3 = self.fm2
-        # self.fm2 = self.fm1
-        # self.fm1 = self.fm
 
         # front 10-100 cm
         self.fl = self.robot.get_front_left_laser()
@@ -279,11 +269,6 @@ class Robot:
 
     def spin(self):
         """The main loop of the robot."""
-        self.calculate()
-        print(self.ln, self.rn)
-        self.calc_angle()
-        self.right_start = self.robot.get_right_wheel_encoder()
-        self.left_start = self.robot.get_left_wheel_encoder()
         while not self.shutdown:
             self.sense()
             self.get_state()
