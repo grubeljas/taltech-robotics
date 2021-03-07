@@ -26,6 +26,7 @@ class Robot:
         self.right_wheel = 0
         self.left_wheel = 0
 
+        self.state = "Find first object."
         self.speed = 8
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
@@ -37,7 +38,7 @@ class Robot:
         """
         self.robot = robot
 
-    def get_state(self) -> str:
+    def get_state(self):
         """Return the current state."""
         print("------")
         print("left lasers")
@@ -48,7 +49,7 @@ class Robot:
         print(f"dis {self.fl} {self.fm} {self.fr}")
 
     def sense(self):
-        """Read values from sensors via PiBot  API into class variables (self)."""
+        """Read values from sensors via PiBot API into class variables (self)."""
         # front 10-100 cm
         self.fl = self.robot.get_front_left_laser()
         self.fm = self.robot.get_front_middle_laser()
@@ -70,14 +71,15 @@ class Robot:
 
     def plan(self):
         """Perform the planning steps as required by the problem statement."""
-        if self.fm < 0.55:
-            self.right_wheel, self.left_wheel = self.speed, self.speed
-            if self.fm <= 0.1:
-                self.ultra_spin()
-                self.shutdown = True
-        else:
-            self.left_wheel = - self.speed
-            self.right_wheel = self.speed
+        if self.state == "Find first object.":
+            if self.fm < 0.55:
+                self.right_wheel, self.left_wheel = self.speed, self.speed
+                if self.fm <= 0.1:
+                    self.ultra_spin()
+                    self.shutdown = True
+            else:
+                self.left_wheel = - self.speed
+                self.right_wheel = self.speed
 
     def ultra_spin(self):
         """Make a spin on 90 degrees."""
@@ -85,16 +87,21 @@ class Robot:
         self.left_wheel = - self.speed
         self.right_wheel = self.speed
         self.robot.sleep(5)
-        self.act(0, 0)
+        self.act()
 
     def spin(self):
         """The main loop of the robot."""
         while not self.shutdown:
-            self.sense()
+            """self.sense()
             self.get_state()
             self.plan()
             self.act()
-            self.robot.sleep(0.05)
+            self.robot.sleep(0.05)"""
+            self.left_wheel = - self.speed
+            self.right_wheel = self.speed
+            self.act()
+            self.robot.sleep(5)
+            self.shutdown = False
 
 
 def main():
