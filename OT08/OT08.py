@@ -15,8 +15,10 @@ class Robot:
         self.right_pid = 0
         self.left_pid = 0
 
-        self.left_speed = 0
-        self.right_speed = 0
+        self.left_cur = 0
+        self.left_prev = 0
+        self.right_cur = 0
+        self.right_prev = 0
 
         self.p = None
         self.i = None
@@ -57,7 +59,6 @@ class Robot:
           speed -- The speed setpoint for the controller.
         """
         self.left_setpoint = speed
-        pass
 
     def set_right_wheel_speed(self, speed: float):
         """
@@ -67,7 +68,6 @@ class Robot:
           speed -- The speed setpoint for the controller.
         """
         self.right_setpoint = speed
-        pass
 
     def get_left_wheel_pid_output(self):
         """
@@ -89,27 +89,37 @@ class Robot:
 
     def sense(self):
         """SPA architecture sense block."""
-        self.left_speed = self.robot.left_wheel_speed
-        self.right_speed = self.robot.right_wheel_speed
+        # Your code here...
+        self.left_prev = self.left_cur
+        self.left_cur = self.robot.get_left_wheel_encoder()
+        self.right_prev = self.right_cur
+        self.right_cur = self.robot.get_right_wheel_encoder()
         self.prev_time = self.cur_time
         self.cur_time = self.robot.get_time()
+
         pass
 
     def act(self):
         """SPA architecture act block."""
         dt = self.cur_time - self.prev_time
 
-        self.prev_right_error = self.right_error
-        self.right_error = self.right_setpoint - self.right_speed
-        right_error_dif = self.right_error - self.prev_right_error
-        self.right_error_dt += self.right_error
-        self.right_pid = self.p * self.right_error + self.i * self.right_error_dt + self.d * right_error_dif
+        if self.right_prev is not None and self.right_setpoint is not None:
+            self.prev_right_error = self.right_error
+            self.right_error = self.right_setpoint - self.robot.right_wheel_speed
+            right_error_dif = self.right_error - self.prev_right_error
+            self.right_error_dt += self.right_error * dt
+            self.right_pid = self.p * self.right_error + self.i * self.right_error_dt + self.d * right_error_dif
+        else:
+            self.right_pid = 0
 
-        self.prev_left_error = self.left_error
-        self.left_error = self.left_setpoint - self.left_speed
-        left_error_dif = self.left_error - self.prev_left_error
-        self.left_error_dt += self.left_error
-        self.left_pid = self.p * self.left_error + self.i * self.left_error_dt + self.d * left_error_dif
+        if self.left_prev is not None and self.left_setpoint is not None:
+            self.prev_left_error = self.left_error
+            self.left_error = self.left_setpoint - self.robot.left_wheel_speed
+            left_error_dif = self.left_error - self.prev_left_error
+            self.left_error_dt += self.left_error * dt
+            self.left_pid = self.p * self.left_error + self.i * self.left_error_dt + self.d * left_error_dif
+        else:
+            self.left_pid = 0
 
         self.robot.set_left_wheel_speed(self.left_pid)
         self.robot.set_right_wheel_speed(self.right_pid)
