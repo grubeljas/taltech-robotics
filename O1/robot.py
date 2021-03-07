@@ -92,10 +92,21 @@ class Robot:
                 self.r = 0
                 self.l = 0
             self.act(self.speed + self.l, self.speed + self.r)
+            self.previous_state = self.state
+            self.state = 0
             if self.fm <= 0.1:
                 self.ultra_spin()
                 self.shutdown = True
         else:
+            if self.previous_state == self.state:
+                if self.robot.get_right_wheel_encoder() + self.robot.get_left_wheel_encoder() > 0:
+                    self.r += 1
+                    self.l -= 1
+            else:
+                self.r = 0
+                self.l = 0
+            self.previous_state = self.state
+            self.state = 1
             self.act(-self.speed, self.speed)
 
     def ultra_spin(self):
