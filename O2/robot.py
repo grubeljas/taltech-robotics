@@ -92,16 +92,11 @@ class Robot:
     def spin(self):
         """The main loop of the robot."""
         while not self.shutdown:
-            """self.sense()
+            self.sense()
             self.get_state()
             self.plan()
             self.act()
-            self.robot.sleep(0.05)"""
-            self.left_wheel = - self.speed
-            self.right_wheel = self.speed
-            self.act()
-            self.robot.sleep(5)
-            self.shutdown = True
+            self.robot.sleep(0.05)
 
 
 def main():
