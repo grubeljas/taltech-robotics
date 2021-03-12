@@ -105,6 +105,7 @@ class Robot:
             else:
                 self.r = 0
                 self.l = 0
+
             self.previous_state = self.state
             self.state = 1
             self.act(-self.speed, self.speed)
