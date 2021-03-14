@@ -42,10 +42,7 @@ class Robot:
     def get_state(self):
         """Return the current state."""
         print("------")
-        print("left lasers")
-        print(f"dis {self.left_side} {self.left_diagonal} {self.left_back}")
-        print("right lasers")
-        print(f"dis {self.right_side} {self.right_diagonal} {self.right_back}")
+        print(f"{self.r} {self.l}")
         print("front lasers")
         print(f"dis {self.fl} {self.fm} {self.fr}")
 
@@ -55,15 +52,6 @@ class Robot:
         self.fl = self.robot.get_front_left_laser()
         self.fm = self.robot.get_front_middle_laser()
         self.fr = self.robot.get_front_right_laser()
-
-        # 2-16 cm
-        self.left_back = self.robot.get_rear_left_straight_ir()
-        self.left_diagonal = self.robot.get_rear_left_diagonal_ir()
-        self.left_side = self.robot.get_rear_left_side_ir()
-
-        self.right_back = self.robot.get_rear_right_straight_ir()
-        self.right_diagonal = self.robot.get_rear_right_diagonal_ir()
-        self.right_side = self.robot.get_rear_right_side_ir()
 
     def act(self, left_wheel, right_wheel):
         """."""
