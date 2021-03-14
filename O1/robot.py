@@ -27,7 +27,7 @@ class Robot:
         self.r = 0
 
         self.speed = 8
-        self.state = 0 # 0 - left ; 1 - straight
+        self.state = 1 # 0 - left ; 1 - straight
         self.previous_state = 0
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
