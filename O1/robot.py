@@ -70,37 +70,47 @@ class Robot:
         self.robot.set_right_wheel_speed(right_wheel)
         self.robot.set_left_wheel_speed(left_wheel)
 
+    def straight(self):
+        """."""
+        if self.previous_state == self.state and not self.simulation:
+            if self.robot.get_right_wheel_encoder() > self.robot.get_left_wheel_encoder():
+                self.l += 1
+            if self.robot.get_right_wheel_encoder() < self.robot.get_left_wheel_encoder():
+                self.r += 1
+        else:
+            self.r = 0
+            self.l = 0
+        self.act(self.speed + self.l, self.speed + self.r)
+        if self.state:
+            self.previous_state = self.state
+
+        print("object is close")
+        if self.fm <= 0.1:
+            self.ultra_spin()
+            self.shutdown = True
+
+    def turn_left(self):
+        """Turn left until object."""
+        print("spinning")
+        if self.fm < 0.50:
+            self.state = 1
+            self.previous_state = 0
+            self.r = 0
+            self.l = 0
+            return
+        if self.previous_state == self.state and not self.simulation:
+            if self.robot.get_right_wheel_encoder() + self.robot.get_left_wheel_encoder() > 0:
+                self.r += 1
+                self.l -= 1
+
+        self.act(self.speed + self.l, self.speed + self.r)
+
     def plan(self):
         """Perform the planning steps as required by the problem statement."""
-        if self.fm < 0.50:
-            if self.previous_state == self.state and not self.simulation:
-                if self.robot.get_right_wheel_encoder() > self.robot.get_left_wheel_encoder():
-                    self.l += 1
-                if self.robot.get_right_wheel_encoder() < self.robot.get_left_wheel_encoder():
-                    self.r += 1
-            else:
-                self.r = 0
-                self.l = 0
-            self.act(self.speed + self.l, self.speed + self.r)
-            self.previous_state = self.state
-            self.state = 0
-            print("object is close")
-            if self.fm <= 0.1:
-                self.ultra_spin()
-                self.shutdown = True
+        if self.state:
+            self.straight()
         else:
-            print("spinning")
-            if self.previous_state == self.state and not self.simulation:
-                if self.robot.get_right_wheel_encoder() + self.robot.get_left_wheel_encoder() > 0:
-                    self.r += 1
-                    self.l -= 1
-            else:
-                self.r = 0
-                self.l = 0
-
-            self.previous_state = self.state
-            self.state = 1
-            self.act(-self.speed, self.speed)
+            self.turn_left()
 
     def ultra_spin(self):
         """Make a spin on 90 degrees."""
