@@ -94,10 +94,12 @@ class Robot:
             self.act(self.speed + self.l, self.speed + self.r)
             self.previous_state = self.state
             self.state = 0
+            print("object is close")
             if self.fm <= 0.1:
                 self.ultra_spin()
                 self.shutdown = True
         else:
+            print("spinning")
             if self.previous_state == self.state:
                 if self.robot.get_right_wheel_encoder() + self.robot.get_left_wheel_encoder() > 0:
                     self.r += 1
@@ -126,6 +128,7 @@ class Robot:
                 self.plan()
                 self.robot.sleep(0.05)
         else:
+            print("not simulation")
             while not self.shutdown:
                 self.sense()
                 self.get_state()
