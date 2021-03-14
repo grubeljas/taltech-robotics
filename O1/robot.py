@@ -72,18 +72,8 @@ class Robot:
 
     def plan(self):
         """Perform the planning steps as required by the problem statement."""
-        if self.fm < 0.55:
-            self.act(self.speed, self.speed)
-            if self.fm <= 0.1:
-                self.ultra_spin()
-                self.shutdown = True
-        else:
-            self.act(-self.speed, self.speed)
-
-    def plan2(self):
-        """Perform the planning steps as required by the problem statement."""
-        if self.fm < 0.55:
-            if self.previous_state == self.state:
+        if self.fm < 0.50:
+            if self.previous_state == self.state and not self.simulation:
                 if self.robot.get_right_wheel_encoder() > self.robot.get_left_wheel_encoder():
                     self.l += 1
                 if self.robot.get_right_wheel_encoder() < self.robot.get_left_wheel_encoder():
@@ -100,7 +90,7 @@ class Robot:
                 self.shutdown = True
         else:
             print("spinning")
-            if self.previous_state == self.state:
+            if self.previous_state == self.state and not self.simulation:
                 if self.robot.get_right_wheel_encoder() + self.robot.get_left_wheel_encoder() > 0:
                     self.r += 1
                     self.l -= 1
@@ -121,19 +111,11 @@ class Robot:
 
     def spin(self):
         """The main loop of the robot."""
-        if self.simulation:
-            while not self.shutdown:
-                self.sense()
-                self.get_state()
-                self.plan()
-                self.robot.sleep(0.05)
-        else:
-            print("not simulation")
-            while not self.shutdown:
-                self.sense()
-                self.get_state()
-                self.plan2()
-                self.robot.sleep(0.05)
+        while not self.shutdown:
+            self.sense()
+            self.get_state()
+            self.plan()
+            self.robot.sleep(0.05)
 
 
 def main():
