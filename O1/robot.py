@@ -86,10 +86,6 @@ class Robot:
             self.r = 0
             self.l = 0
             return
-        if self.previous_state == self.state:
-            if self.robot.get_right_wheel_encoder() + self.robot.get_left_wheel_encoder() > 0:
-                self.r += 1
-                self.l -= 1
 
         self.act(self.speed + self.l, self.speed + self.r)
 
