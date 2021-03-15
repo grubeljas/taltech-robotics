@@ -29,6 +29,7 @@ class Robot:
         self.speed = 8
         self.state = 0 # 0 - left ; 1 - straight
         self.previous_state = 0
+        self.dir = self.robot.get
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
@@ -80,7 +81,7 @@ class Robot:
     def turn_left(self):
         """Turn left until object."""
         print("spinning")
-        if self.fm < 0.30:
+        if self.fm != 0.5 and self.fl == 0.5 and self.fr == 0.5:
             self.state = 1
             self.previous_state = 0
             self.r = 0
