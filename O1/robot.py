@@ -87,6 +87,10 @@ class Robot:
             self.l = 0
             return
 
+        if abs(self.robot.get_right_wheel_encoder() - self.robot.get_left_wheel_encoder()) < 0.05:
+            self.r += 1
+            self.l += 1
+
         self.act(-self.speed + self.l, self.speed + self.r)
 
     def plan(self):
