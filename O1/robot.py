@@ -29,7 +29,7 @@ class Robot:
         self.speed = 8
         self.state = 0 # 0 - left ; 1 - straight
         self.previous_state = 0
-        self.dir = self.robot.get
+        self.dir = self.robot.get_rotation()
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
