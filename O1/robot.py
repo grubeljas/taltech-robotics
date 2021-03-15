@@ -76,7 +76,7 @@ class Robot:
             self.previous_state = self.state
 
         print("object is close")
-        if self.fm <= 0.1 or self.fr <= 0.1 or self.fl <= 0.1:
+        if (self.fm <= 0.1 or self.fr <= 0.1 or self.fl <= 0.1) and self.fm != 0.05:
             self.ultra_spin()
             self.shutdown = True
 
