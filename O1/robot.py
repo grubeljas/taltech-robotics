@@ -63,9 +63,11 @@ class Robot:
         """."""
         if self.previous_state == self.state:
             if self.robot.get_right_wheel_encoder() > self.robot.get_left_wheel_encoder():
-                self.l += 0.5
+                self.l += 1
+                self.r += 1
             if self.robot.get_right_wheel_encoder() < self.robot.get_left_wheel_encoder():
-                self.r += 0.5
+                self.r += 1
+                self.l += 1
         else:
             self.r = 0
             self.l = 0
