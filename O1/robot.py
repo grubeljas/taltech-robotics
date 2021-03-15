@@ -81,7 +81,7 @@ class Robot:
     def turn_left(self):
         """Turn left until object."""
         print("spinning")
-        if self.fm != 0.5 and self.fl == 0.5 and self.fr == 0.5:
+        if self.fm < 0.5 and self.fl == 0.5 and self.fr == 0.5:
             self.state = 1
             self.previous_state = 0
             self.r = 0
