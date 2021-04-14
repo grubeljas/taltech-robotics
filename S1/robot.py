@@ -32,6 +32,9 @@ class Robot:
         This loop is expected to call sense, plan, act methods cyclically.
         """
         while not self.shutdown:
+            self.sense()
+            self.plan()
+            self.act()
             print(f'The time is {self.robot.get_time()}!')
             print(f'{self.camera}')
             self.robot.sleep(0.05)
