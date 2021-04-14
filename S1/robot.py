@@ -33,6 +33,7 @@ class Robot:
         """
         while not self.shutdown:
             print(f'The time is {self.robot.get_time()}!')
+            print(f'{self.camera}')
             self.robot.sleep(0.05)
             if self.robot.get_time() > 20:
                 self.shutdown = True
