@@ -58,3 +58,17 @@ class Robot:
         """act."""
         self.robot.set_left_wheel_speed(self.left_wheel_speed)
         self.robot.set_right_wheel_speed(self.right_wheel_speed)
+
+
+def main():
+    """
+    The main function.
+
+    Create a Robot class object and run it.
+    """
+    robot = Robot()
+    robot.spin()
+
+
+if __name__ == "__main__":
+    main()
