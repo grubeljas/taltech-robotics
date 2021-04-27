@@ -38,6 +38,8 @@ class Robot:
             print(f'The time is {self.robot.get_time()}!')
             print(f'{self.camera}')
             self.robot.sleep(0.05)
+            if self.robot.get_time() > 200.0:
+                self.shutdown = True
 
     def sense(self):
         """sense."""
@@ -45,7 +47,7 @@ class Robot:
 
     def plan(self):
         """plan."""
-        if self.robot.get_time < 50.0:
+        if self.robot.get_time() < 50.0:
             self.left_wheel_speed = -10
             self.right_wheel_speed = 10
         else:
