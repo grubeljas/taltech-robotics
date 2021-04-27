@@ -38,8 +38,6 @@ class Robot:
             print(f'The time is {self.robot.get_time()}!')
             print(f'{self.camera}')
             self.robot.sleep(0.05)
-            if self.robot.get_time() > 200:
-                self.shutdown = True
 
     def sense(self):
         """sense."""
