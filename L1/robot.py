@@ -20,8 +20,8 @@ class Robot:
         self.second_right_line_sensor = 0
         self.center_right_line_sensor = 0
         self.all = []
-        self.r = 0
-        self.l = 0
+        self.r_corrector = 0
+        self.l_corrector = 0
 
         self.line_direction = None
 
@@ -86,43 +86,55 @@ class Robot:
 
     def follow_the_line(self):
         """Instruction for robot to follow the line."""
-        line_direction = self.get_line_direction()
-        if line_direction == "straight":
-            if line_direction == self.prev_dir and not self.simulation:
-                if self.get_left_velocity() > self.get_right_velocity():
-                    self.r += 1
-                elif self.get_left_velocity() < self.get_right_velocity():
-                    self.l += 1
-            self.left_wheel_speed = 10 + self.l
-            self.right_wheel_speed = 10 + self.r
-        elif line_direction == "right":
-            if line_direction == self.prev_dir and not self.simulation:
-                if self.get_left_velocity() + self.get_right_velocity() > 0:
-                    self.r -= 1
-                    self.l += 1
-            else:
-                self.r = 0
-                self.l = 0
-            self.left_wheel_speed = 8 + self.l
-            self.right_wheel_speed = -8 + self.r
-        elif line_direction == "left":
-            if line_direction == self.prev_dir and not self.simulation:
-                if self.get_left_velocity() + self.get_right_velocity() > 0:
-                    self.r += 1
-                    self.l -= 1
-            else:
-                self.r = 0
-                self.l = 0
-            self.left_wheel_speed = -8 + self.l
-            self.right_wheel_speed = 8 + self.r
-        elif line_direction == "absent":
+        self.line_direction = self.get_line_direction()
+        if self.line_direction == "straight":
+            self.moving_straight_correlation()
+        elif self.line_direction == "right":
+            self.moving_right_correlation()
+        elif self.line_direction == "left":
+            self.moving_left_correlation()
+        elif self.line_direction == "absent":
             self.no_line_counter += 1
             print(f"No line counter = {self.no_line_counter}")
 
-        if self.no_line_counter > 0 and line_direction != "absent":
+        if self.no_line_counter > 0 and self.line_direction != "absent":
             self.no_line_counter = 0
         elif self.no_line_counter > 50:
             self.shutdown = True
+
+    def moving_straight_correlation(self):
+        """Check if velocity of wheels is the same and correlate it."""
+        if self.line_direction == self.prev_dir and not self.simulation:
+            if self.get_left_velocity() > self.get_right_velocity():
+                self.r_corrector += 1
+            elif self.get_left_velocity() < self.get_right_velocity():
+                self.l_corrector += 1
+        self.left_wheel_speed = 10 + self.l_corrector
+        self.right_wheel_speed = 10 + self.r_corrector
+
+    def moving_left_correlation(self):
+        """Check if turning left is going okay and correlate it."""
+        if self.line_direction == self.prev_dir and not self.simulation:
+            if self.get_left_velocity() + self.get_right_velocity() > 0:
+                self.r_corrector += 1
+                self.l_corrector -= 1
+        else:
+            self.r_corrector = 0
+            self.l_corrector = 0
+        self.left_wheel_speed = -8 + self.l_corrector
+        self.right_wheel_speed = 8 + self.r_corrector
+
+    def moving_right_correlation(self):
+        """Check if turning right is going okay and correlate it."""
+        if self.line_direction == self.prev_dir and not self.simulation:
+            if self.get_left_velocity() + self.get_right_velocity() > 0:
+                self.r_corrector -= 1
+                self.l_corrector += 1
+        else:
+            self.r_corrector = 0
+            self.l_corrector = 0
+        self.left_wheel_speed = 8 + self.l_corrector
+        self.right_wheel_speed = -8 + self.r_corrector
 
     def get_left_velocity(self) -> float:
         """
