@@ -18,7 +18,6 @@ class Robot:
         self.closest_x = 0
 
         self.max_width = 0
-        self.rad = 0
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """Set the API reference."""
@@ -45,8 +44,8 @@ class Robot:
                 self.closest_x = self.closest_object[1][0]
         if self.max_width and len(self.camera_objects) > 0:
             print(self.field_of_view)
-            self.rad = math.radians(((self.max_width / 2 - self.closest_x) / self.max_width) * self.field_of_view[0])
-            return self.rad
+            rad = math.radians(((self.max_width / 2 - self.closest_x) / self.max_width) * self.field_of_view[0])
+            return rad
 
     def sense(self):
         """SPA architecture sense block."""
