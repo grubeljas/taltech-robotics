@@ -191,9 +191,10 @@ class Robot:
         self.truth = self.robot.get_ground_truth()
 
         self.get_encoder_odometry()
-        self.update_world()
-        self.camera_objects_copy = self.camera_objects.copy()
-        print(self.camera_objects_copy, self.camera_objects, "CAMOCJ")
+        if not (self.camera_objects == self.camera_objects_copy):
+            self.update_world()
+            self.camera_objects_copy = self.camera_objects.copy()
+            print(self.camera_objects_copy, self.camera_objects, "CAMOCJ")
         print(self.item_dict, "ITEMDICT")
         angle = self.get_closest_object_angle()
         print("----------------", self.shortest_point, "CLOSEST OBJECT", angle, "ANGLE", self.yaw, "YAW")
