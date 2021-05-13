@@ -16,12 +16,10 @@ class Robot:
         """
         self.robot = PiBot.PiBot()
 
-        # ODOMETRY
         self.truth = 0
 
         self.encoder_odometry = (initial_odometry[0], initial_odometry[1], initial_odometry[2])
 
-        # encoders
         self.left_encoder = 0
         self.left_last_encoder = 0
         self.left_cycle_encoder = 0
@@ -29,16 +27,12 @@ class Robot:
         self.right_last_encoder = 0
         self.right_cycle_encoder = 0
 
-        # time
         self.time = 0
         self.last_time = 0
         self.cycle_time = 0
 
-        # angular velocity
         self.angularLeftVelocity = 0
         self.angularRightVelocity = 0
-
-        # VISION PROCESSING
 
         self.camera_objects = []
         self.resolution = self.robot.CAMERA_RESOLUTION
@@ -51,7 +45,6 @@ class Robot:
         self.max_width = 0
         self.rad = 0
 
-        # general
 
         self.camera_objects_copy = 0
         self.item_dict = {}
@@ -72,17 +65,17 @@ class Robot:
         self.robot = robot
 
     def get_x_speed(self, yaw):
-        """X coordinate change in time."""
+        """X change."""
         x = (self.robot.WHEEL_DIAMETER / 2) / 2 * (self.angularLeftVelocity + self.angularRightVelocity)
         return x * math.cos(yaw)
 
     def get_y_speed(self, yaw):
-        """Y coordinate change in time."""
+        """Y change."""
         y = (self.robot.WHEEL_DIAMETER / 2) / 2 * (self.angularLeftVelocity + self.angularRightVelocity)
         return y * math.sin(yaw)
 
     def get_yaw(self):
-        """Calculate yaw for encoder odometry."""
+        """Calculate yaw."""
         velocity_diff = self.angularRightVelocity - self.angularLeftVelocity
         return (self.robot.WHEEL_DIAMETER / 2) / self.robot.AXIS_LENGTH * velocity_diff
 
@@ -123,7 +116,7 @@ class Robot:
                                                           self.encoder_odometry[1] + self.object_y)
 
     @property
-    def get_closest_object_angle(self) -> float:
+    def get_closest_object_angle(self):
         """
         Return the angle of the closest object.
 
@@ -153,8 +146,6 @@ class Robot:
             self.robot_object_angle = math.atan2(self.shortest_point[1] - self.encoder_odometry[1],
                                                  self.shortest_point[0] - self.encoder_odometry[0])
             return (self.robot_object_angle - self.yaw) % (2 * math.pi)
-        else:
-            return None
 
     def sense(self):
         """SPA architecture sense block."""
@@ -183,20 +174,16 @@ class Robot:
         if not (self.camera_objects == self.camera_objects_copy):
             self.update_world()
             self.camera_objects_copy = self.camera_objects.copy()
-            print(self.camera_objects_copy, self.camera_objects, "CAMOBJ")
-        print(self.item_dict, "ITEMDICT")
-        self.get_closest_object_angle()
+        self.get_closest_object_angle
 
         self.last_time = self.time
         self.left_last_encoder = self.left_encoder
         self.right_last_encoder = self.right_encoder
-        pass
 
     def spin(self):
         """Spin loop."""
         for _ in range(100):
             self.sense()
-            print(f"objects = {self.robot.get_camera_objects()}")
             self.robot.sleep(0.05)
 
 
@@ -204,21 +191,6 @@ def main():
     """The main entry point."""
     robot = Robot()
     robot.spin()
-
-
-def test():
-    robot = Robot([0.201, -0.148, 1.529])  # initial odometry values (to compare with ground truth)
-    import turn_and_straight
-    data = turn_and_straight.get_data()
-    robot.robot.load_data_profile(data)
-
-    last_update = robot.robot.get_time()
-    for _ in range(int(robot.robot.data[-1][0]/0.05)):
-        robot.sense()
-        if last_update + 1 < robot.robot.get_time():
-            robot.update_world()
-            last_update = robot.robot.get_time()
-        robot.robot.sleep(0.05)
 
 
 if __name__ == "__main__":
