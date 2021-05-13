@@ -16,12 +16,10 @@ class Robot:
         """
         self.robot = PiBot.PiBot()
 
-        # ODOMETRY
         self.truth = 0
 
         self.encoder_odometry = (initial_odometry[0], initial_odometry[1], initial_odometry[2])
 
-        # encoders
         self.left_encoder = 0
         self.left_last_encoder = 0
         self.left_cycle_encoder = 0
@@ -154,8 +152,8 @@ class Robot:
           None if no objects have been detected.
         """
         # Your code here...
+        self.shortest_dist = 10000
         for item in self.item_dict:
-            self.shortest_dist = 10000
             print("X:", self.item_dict[item][0], self.encoder_odometry[0], "Y:", self.item_dict[item][1], self.encoder_odometry[1])
             self.euclidean_distance = math.sqrt(math.pow(self.item_dict[item][0] - self.encoder_odometry[0], 2) + math.pow(self.item_dict[item][1] - self.encoder_odometry[1], 2))
             if self.euclidean_distance < self.shortest_dist:
@@ -168,16 +166,11 @@ class Robot:
         else:
             return None
 
-
     def sense(self):
         """SPA architecture sense block."""
         self.camera_objects = self.robot.get_camera_objects()
         self.max_width = self.resolution[0]
-        # self.get_closest_visible_object_angle()
 
-        # ODOMETRY
-
-        # Your code here...
         self.left_encoder = self.robot.get_left_wheel_encoder()
         self.right_encoder = self.robot.get_right_wheel_encoder()
 
@@ -195,17 +188,15 @@ class Robot:
             self.angularLeftVelocity = 0
             self.angularRightVelocity = 0
 
-        # get true data (for testing purposes)
         self.truth = self.robot.get_ground_truth()
 
         self.get_encoder_odometry()
-        if not (self.camera_objects == self.camera_objects_copy):
-            self.update_world()
-            self.camera_objects_copy = self.camera_objects.copy()
-            print(self.camera_objects_copy, self.camera_objects, "CAMOCJ")
+        self.update_world()
+        self.camera_objects_copy = self.camera_objects.copy()
+        print(self.camera_objects_copy, self.camera_objects, "CAMOCJ")
         print(self.item_dict, "ITEMDICT")
-        self.get_closest_object_angle()
-        print("----------------", self.shortest_point, "CLOSEST OBJECT", self.get_closest_object_angle(), "ANGLE", self.yaw, "YAW")
+        angle = self.get_closest_object_angle()
+        print("----------------", self.shortest_point, "CLOSEST OBJECT", angle, "ANGLE", self.yaw, "YAW")
         print(self.angularLeftVelocity, self.angularRightVelocity, "velocities")
         print("ENCODER ODO", self.encoder_odometry)
         print("TRUTH", self.truth)
@@ -227,8 +218,8 @@ class Robot:
 def main():
     """The main entry point."""
     robot = Robot()
-    import turn_and_straight  # or any other data file
-    data = turn_and_straight.get_data()
+    import straight_spin_straight  # or any other data file
+    data = straight_spin_straight.get_data()
     robot.robot.load_data_profile(data)
     robot.spin()
 
