@@ -141,12 +141,9 @@ class Robot:
                 4.71 if the objectis 90 degrees to the right of the robot.
           None if no objects have been detected.
         """
-        if len(self.item_dict) == 0:
-            return None
+        self.shortest_dist = 10000
+        self.shortest_point = None
         for item in self.item_dict:
-            self.shortest_dist = 10000
-            print("X:", self.item_dict[item][0], self.encoder_odometry[0],
-                  "Y:", self.item_dict[item][1], self.encoder_odometry[1])
             self.euclidean_distance = math.sqrt(math.pow(self.item_dict[item][0] - self.encoder_odometry[0], 2)
                                                 + math.pow(self.item_dict[item][1] - self.encoder_odometry[1], 2))
             if self.euclidean_distance < self.shortest_dist:
@@ -155,7 +152,6 @@ class Robot:
         if self.shortest_point:
             self.robot_object_angle = math.atan2(self.shortest_point[1] - self.encoder_odometry[1],
                                                  self.shortest_point[0] - self.encoder_odometry[0])
-            print(self.robot_object_angle, self.yaw, "Object angle AND THEN YAW")
             return (self.robot_object_angle - self.yaw) % (2 * math.pi)
         else:
             return None
@@ -190,12 +186,7 @@ class Robot:
             print(self.camera_objects_copy, self.camera_objects, "CAMOBJ")
         print(self.item_dict, "ITEMDICT")
         self.get_closest_object_angle()
-        print(self.shortest_point, "CLOSEST OBJECT", self.get_closest_object_angle, "ANGLE", self.yaw, "YAW")
-        print(self.angularLeftVelocity, self.angularRightVelocity, "velocities")
-        print("ENCODER ODO", self.encoder_odometry)
-        print("TRUTH", self.truth)
 
-        # new previous values
         self.last_time = self.time
         self.left_last_encoder = self.left_encoder
         self.right_last_encoder = self.right_encoder
@@ -213,6 +204,21 @@ def main():
     """The main entry point."""
     robot = Robot()
     robot.spin()
+
+
+def test():
+    robot = Robot([0.201, -0.148, 1.529])  # initial odometry values (to compare with ground truth)
+    import turn_and_straight
+    data = turn_and_straight.get_data()
+    robot.robot.load_data_profile(data)
+
+    last_update = robot.robot.get_time()
+    for _ in range(int(robot.robot.data[-1][0]/0.05)):
+        robot.sense()
+        if last_update + 1 < robot.robot.get_time():
+            robot.update_world()
+            last_update = robot.robot.get_time()
+        robot.robot.sleep(0.05)
 
 
 if __name__ == "__main__":
