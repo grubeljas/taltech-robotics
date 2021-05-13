@@ -73,18 +73,18 @@ class Robot:
 
     def get_x_speed(self, yaw):
         """X coordinate change in time."""
-        return ((self.robot.WHEEL_DIAMETER / 2) / 2 * (self.angularLeftVelocity + self.angularRightVelocity)) \
-               * math.cos(yaw)
+        x = (self.robot.WHEEL_DIAMETER / 2) / 2 * (self.angularLeftVelocity + self.angularRightVelocity)
+        return x * math.cos(yaw)
 
     def get_y_speed(self, yaw):
         """Y coordinate change in time."""
-        return ((self.robot.WHEEL_DIAMETER / 2) / 2 * (self.angularLeftVelocity + self.angularRightVelocity)) \
-               * math.sin(yaw)
+        y = (self.robot.WHEEL_DIAMETER / 2) / 2 * (self.angularLeftVelocity + self.angularRightVelocity)
+        return y * math.sin(yaw)
 
     def get_yaw(self):
         """Calculate yaw for encoder odometry."""
-        return (self.robot.WHEEL_DIAMETER / 2) / self.robot.AXIS_LENGTH \
-               * (self.angularRightVelocity - self.angularLeftVelocity)
+        velocity_diff = self.angularRightVelocity - self.angularLeftVelocity
+        return (self.robot.WHEEL_DIAMETER / 2) / self.robot.AXIS_LENGTH * velocity_diff
 
     def get_encoder_odometry(self):
         """
@@ -110,7 +110,6 @@ class Robot:
 
             self.object_dist = 30 / self.camera_objects[item][2]
             print(self.object_dist, self.camera_objects[item][2], "_____")
-
 
             self.object_x = self.object_dist * math.sin(self.yaw + self.rad)
             self.object_y = self.object_dist * math.cos(self.yaw + self.rad)
@@ -142,15 +141,20 @@ class Robot:
                 4.71 if the objectis 90 degrees to the right of the robot.
           None if no objects have been detected.
         """
+        if len(self.item_dict) == 0:
+            return None
         for item in self.item_dict:
             self.shortest_dist = 10000
-            print("X:", self.item_dict[item][0], self.encoder_odometry[0], "Y:", self.item_dict[item][1], self.encoder_odometry[1])
-            self.euclidean_distance = math.sqrt(math.pow(self.item_dict[item][0] - self.encoder_odometry[0], 2) + math.pow(self.item_dict[item][1] - self.encoder_odometry[1], 2))
+            print("X:", self.item_dict[item][0], self.encoder_odometry[0],
+                  "Y:", self.item_dict[item][1], self.encoder_odometry[1])
+            self.euclidean_distance = math.sqrt(math.pow(self.item_dict[item][0] - self.encoder_odometry[0], 2)
+                                                + math.pow(self.item_dict[item][1] - self.encoder_odometry[1], 2))
             if self.euclidean_distance < self.shortest_dist:
                 self.shortest_dist = self.euclidean_distance
                 self.shortest_point = (self.item_dict[item][0], self.item_dict[item][1])
         if self.shortest_point:
-            self.robot_object_angle = math.atan2(self.shortest_point[1] - self.encoder_odometry[1], self.shortest_point[0] - self.encoder_odometry[0])
+            self.robot_object_angle = math.atan2(self.shortest_point[1] - self.encoder_odometry[1],
+                                                 self.shortest_point[0] - self.encoder_odometry[0])
             print(self.robot_object_angle, self.yaw, "Object angle AND THEN YAW")
             return (self.robot_object_angle - self.yaw) % (2 * math.pi)
         else:
@@ -171,8 +175,8 @@ class Robot:
         self.right_cycle_encoder = self.right_encoder - self.right_last_encoder
 
         if self.cycle_time > 0:
-            self.angularLeftVelocity = ((math.radians(self.left_cycle_encoder) / self.cycle_time))
-            self.angularRightVelocity = ((math.radians(self.right_cycle_encoder) / self.cycle_time))
+            self.angularLeftVelocity = (math.radians(self.left_cycle_encoder) / self.cycle_time)
+            self.angularRightVelocity = (math.radians(self.right_cycle_encoder) / self.cycle_time)
         else:
             self.angularLeftVelocity = 0
             self.angularRightVelocity = 0
@@ -185,7 +189,7 @@ class Robot:
             self.camera_objects_copy = self.camera_objects.copy()
             print(self.camera_objects_copy, self.camera_objects, "CAMOBJ")
         print(self.item_dict, "ITEMDICT")
-        self.get_closest_object_angle
+        self.get_closest_object_angle()
         print(self.shortest_point, "CLOSEST OBJECT", self.get_closest_object_angle, "ANGLE", self.yaw, "YAW")
         print(self.angularLeftVelocity, self.angularRightVelocity, "velocities")
         print("ENCODER ODO", self.encoder_odometry)
@@ -209,6 +213,7 @@ def main():
     """The main entry point."""
     robot = Robot()
     robot.spin()
+
 
 if __name__ == "__main__":
     main()
