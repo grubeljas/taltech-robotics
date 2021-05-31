@@ -10,7 +10,7 @@ class Robot:
         self.robot = PiBot.PiBot()
         self.shutdown = False
         self.sensor = [0, 0, 0, 0, 0]
-        self.middle = None
+        self.middle = 0
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """Set the PiBot reference."""
@@ -23,11 +23,10 @@ class Robot:
         Returns:
           None if filter is empty, filtered value otherwise.
         """
-        laser_info = self.robot.get_front_middle_laser()
-        if laser_info == 0 or self.middle is None:
+        if self.middle is None:
             return None
         self.sensor.pop(0)
-        self.sensor.append(laser_info)
+        self.sensor.append(self.get_front_middle_laser())
         list = sorted(self.sensor[:], key=lambda x: x)
         return list[2]
 
