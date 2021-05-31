@@ -1,5 +1,5 @@
 """OT05 - Noise."""
-from OT11 import PiBot
+import PiBot
 
 
 class Robot:
@@ -10,7 +10,7 @@ class Robot:
         self.robot = PiBot.PiBot()
         self.shutdown = False
         self.sensor = [0, 0, 0, 0, 0]
-        self.middle = 0
+        self.middle = None
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """Set the PiBot reference."""
@@ -26,13 +26,14 @@ class Robot:
         if self.middle is None:
             return None
         self.sensor.pop(0)
-        self.sensor.append(self.get_front_middle_laser())
+        self.sensor.append(self.middle)
         list = sorted(self.sensor[:], key=lambda x: x)
+
         return list[2]
 
     def sense(self):
         """Sense."""
-        self.middle = self.get_front_middle_laser()
+        self.middle = self.robot.get_front_middle_laser()
 
     def spin(self):
         """The spin loop."""
@@ -52,6 +53,7 @@ def test():
     robot.robot.load_data_profile(data)
     for i in range(len(data)):
         print(f"laser = {robot.get_front_middle_laser()}")
+        print(f"laser = {robot.sense()}")
         robot.robot.sleep(0.05)
 
 
