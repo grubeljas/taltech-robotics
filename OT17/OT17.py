@@ -98,6 +98,8 @@ class Robot:
             X   X??
             ?X?X???
         """
+        if self.laser is None:
+            return None
         return "            ?X?X???" \
                "X   X??" \
                "? ? ?X?" \
@@ -125,5 +127,15 @@ def main():
     robot.spin()
 
 
+def test():
+    robot = Robot()
+    import m1 # or any other data file
+    data = m1.get_data()
+    robot.robot.load_data_profile(data)
+    for i in range(len(data)):
+        print(f"laser = {robot.robot.get_front_middle_laser()}")
+        robot.robot.sleep(0.05)
+
+
 if __name__ == "__main__":
-    main()
+    test()
