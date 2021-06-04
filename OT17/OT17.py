@@ -98,9 +98,9 @@ class Robot:
             X   X??
             ?X?X???
         """
-        if self.laser is None:
+        if self.laser is None or self.left_wheel_encoder_now is None:
             return None
-        return "            ?X?X???" \
+        return "?X?X???" \
                "X   X??" \
                "? ? ?X?" \
                "? X   X" \
@@ -128,8 +128,9 @@ def main():
 
 
 def test():
+    """Test."""
     robot = Robot()
-    import m1 # or any other data file
+    import m1
     data = m1.get_data()
     robot.robot.load_data_profile(data)
     for i in range(len(data)):
