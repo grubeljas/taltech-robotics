@@ -27,7 +27,7 @@ class Robot:
         self.fm2 = 0.5
         self.fm1 = 0.5
         self.front = [0]
-        self.front_left = [0]
+        self.front_left_list = [0]
 
         self.speed = 8
         self.change_low = 4
@@ -78,6 +78,7 @@ class Robot:
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
         Set the reference to PiBot object.
+
         Returns:
           None
         """
@@ -110,8 +111,8 @@ class Robot:
 
         if self.front_left > 0.5:
             self.front_left = 0.5
-        self.front_left.append(self.front_left)
-        if len(self.front_left) == 6:
+        self.front_left_list.append(self.front_left)
+        if len(self.front_left_list) == 6:
             self.front_left.pop(0)
 
         self.left_diagonal = self.robot.get_rear_left_diagonal_ir()
@@ -201,7 +202,7 @@ class Robot:
 
     def filter_front_left_close(self):
         """Filter front left laser until it sees object and it makes sure its not too close."""
-        lista = self.front_left
+        lista = self.front_left_list
         list_one = list(filter(lambda x: x < 0.15, lista))
         list_two = list(filter(lambda x: x < 0.2, lista))
         c = len(list_one)
@@ -220,7 +221,7 @@ class Robot:
 
     def filterfl(self):
         """Filter object with front left laser."""
-        lista = self.front_left
+        lista = self.front_left_list
         a = lista.count(0.5)
         b = len(lista) - a
         return b > a
