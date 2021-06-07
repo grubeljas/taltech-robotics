@@ -23,6 +23,11 @@ class Robot:
         self.right_ir = 0
         self.right_ir_initial = 0
 
+        self.left_encoder_previous = 0
+        self.left_encoder = 0
+        self.right_encoder = 0
+        self.right_encoder_previous = 0
+
         self.rn = 1.0
         self.ln = 1.0
 
