@@ -16,10 +16,12 @@ class Robot:
         """
         self.robot = PiBot.PiBot()
 
+        # ODOMETRY
         self.truth = 0
 
         self.encoder_odometry = (initial_odometry[0], initial_odometry[1], initial_odometry[2])
 
+        # encoders
         self.left_encoder = 0
         self.left_last_encoder = 0
         self.left_cycle_encoder = 0
@@ -68,6 +70,7 @@ class Robot:
         """Set the API reference."""
         self.robot = robot
 
+    # ODOMETRY
     def get_x_speed(self, yaw):
         """X coordinate change in time."""
         return ((self.robot.WHEEL_DIAMETER / 2) / 2 * (self.angularLeftVelocity + self.angularRightVelocity)) * math.cos(yaw)
@@ -88,9 +91,14 @@ class Robot:
            A tuple with x, y coordinates and yaw angle (x, y, yaw)
            based on encoder data. The units must be (meters, meters, radians).
         """
+        # Your code here...
         self.yaw = self.encoder_odometry[2] + (self.get_yaw() * self.cycle_time)
         self.encoder_odometry = (self.encoder_odometry[0] + (self.get_x_speed(self.get_yaw()) * self.cycle_time), self.encoder_odometry[1] + (self.get_y_speed(self.get_yaw()) * self.cycle_time), self.yaw)
         return self.encoder_odometry
+
+    # END ODOMETRY
+
+    # VISION PROCESSING
 
     def get_closest_visible_object_angle(self):
         """
@@ -110,6 +118,7 @@ class Robot:
                 self.closest_index = item
                 self.closest_x = self.closest_object[1][0]
         if self.max_width and len(self.camera_objects) > 0:
+            # print(self.field_of_view, "FIELD OF VIEW WxH")
             self.rad = math.radians(((self.max_width / 2 - self.closest_x) / self.max_width) * self.field_of_view[0])
             self.rad = self.rad % math.pi
             print(self.rad, "RADs")
@@ -119,6 +128,7 @@ class Robot:
     def update_world(self) -> None:
         """Update the world model (insert objects into memory)."""
         for item in range(len(self.camera_objects)):
+
             if self.max_width and len(self.camera_objects) > 0:
                 print(self.field_of_view)
                 self.rad = math.radians(
@@ -152,25 +162,29 @@ class Robot:
           None if no objects have been detected.
         """
         # Your code here...
-        self.shortest_dist = 10000
         for item in self.item_dict:
+            self.shortest_dist = 10000
             print("X:", self.item_dict[item][0], self.encoder_odometry[0], "Y:", self.item_dict[item][1], self.encoder_odometry[1])
             self.euclidean_distance = math.sqrt(math.pow(self.item_dict[item][0] - self.encoder_odometry[0], 2) + math.pow(self.item_dict[item][1] - self.encoder_odometry[1], 2))
             if self.euclidean_distance < self.shortest_dist:
                 self.shortest_dist = self.euclidean_distance
                 self.shortest_point = (self.item_dict[item][0], self.item_dict[item][1])
         if self.shortest_point:
-            self.yaw_from_zero = math.atan2(self.shortest_point[1] - self.encoder_odometry[1], self.shortest_point[0] - self.encoder_odometry[0])
+            self.yaw_from_zero = math.atan2(self.shortest_point[1], self.shortest_point[0])
             print(self.yaw_from_zero, self.yaw, "YAWFROMZERO AND THEN YAW")
-            return (self.yaw_from_zero + math.pi) % (2 * math.pi)
+            return (self.yaw_from_zero - self.yaw) % (2 * math.pi)
         else:
             return None
+        # angle
+        # self.move_to_degree = (math.degrees(math.atan2(self.stand_at_y, self.stand_at_x))) % 360
 
     def sense(self):
         """SPA architecture sense block."""
+        # VISION
         self.camera_objects = self.robot.get_camera_objects()
         self.max_width = self.resolution[0]
 
+        # ODOMETRY
         self.left_encoder = self.robot.get_left_wheel_encoder()
         self.right_encoder = self.robot.get_right_wheel_encoder()
 
@@ -188,6 +202,7 @@ class Robot:
             self.angularLeftVelocity = 0
             self.angularRightVelocity = 0
 
+        # get true data (for testing purposes)
         self.truth = self.robot.get_ground_truth()
 
         self.get_encoder_odometry()
@@ -196,13 +211,12 @@ class Robot:
             self.camera_objects_copy = self.camera_objects.copy()
             print(self.camera_objects_copy, self.camera_objects, "CAMOCJ")
         print(self.item_dict, "ITEMDICT")
-        angle = self.get_closest_object_angle()
-        print("----------------", self.shortest_point, "CLOSEST OBJECT", angle, "ANGLE", self.yaw, "YAW")
+        self.get_closest_object_angle()
+        print("----------------", self.shortest_point, "CLOSEST OBJECT", self.get_closest_object_angle(), "ANGLE", self.yaw, "YAW")
         print(self.angularLeftVelocity, self.angularRightVelocity, "velocities")
         print("ENCODER ODO", self.encoder_odometry)
         print("TRUTH", self.truth)
 
-        # new previous values
         self.last_time = self.time
         self.left_last_encoder = self.left_encoder
         self.right_last_encoder = self.right_encoder
@@ -219,8 +233,8 @@ class Robot:
 def main():
     """The main entry point."""
     robot = Robot()
-    import straight_spin_straight  # or any other data file
-    data = straight_spin_straight.get_data()
+    import turn_and_straight  # or any other data file
+    data = turn_and_straight.get_data()
     robot.robot.load_data_profile(data)
     robot.spin()
 
