@@ -264,6 +264,11 @@ class Robot:
 
     def sense(self):
         """Sense - gets all the information."""
+        self.left_encoder_previous = self.left_encoder
+        self.left_encoder = self.robot.get_left_wheel_encoder()
+        self.right_encoder_previous = self.right_encoder
+        self.right_encoder = self.robot.get_right_wheel_encoder()
+
         self.leftmost_line_sensor = self.robot.get_leftmost_line_sensor()
         self.second_left_line_sensor = self.robot.get_second_line_sensor_from_left()
         self.center_left_line_sensor = self.robot.get_third_line_sensor_from_left()
