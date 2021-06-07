@@ -1,106 +1,205 @@
-"""O2."""
+"""O2 - Bronze objects."""
 import PiBot
+import math
 
 
 class Robot:
     """Robot class."""
 
     def __init__(self):
-        """Constructor for robot."""
+        """Initialize class."""
         self.robot = PiBot.PiBot()
-        self.shutdown = False
 
-        # front lasers
-        self.fl = 2
-        self.fm = 2
-        self.fr = 2
+        self.robot_current_state = "scan"
 
-        self.left_side = None
-        self.left_diagonal = None
-        self.left_back = None
+        self.distance_from_first_object = 0
+        self.first_object_location_angle = 0
 
-        self.right_back = None
-        self.right_side = None
-        self.right_diagonal = None
+        self.distance_from_second_object = 0
+        self.second_object_location_angle = 0
 
-        self.right_wheel = 0
-        self.left_wheel = 0
+        self.left_wheel_speed = 0
+        self.right_wheel_speed = 0
 
-        self.state = "Find first object."
-        self.speed = 8
+        self.front_middle_laser = 0
+        self.previous_front_middle_laser = 0
+
+        self.left_wheel_encoder = 0
+
+        self.current_rotation = 0
+
+        self.first_object_found = False
+        self.second_object_found = False
+
+        self.triangle_side_length = 0
+
+        self.adjusting_position = False
+        self.position_adjusting_phase = ""
+        self.last_adjusted_by = ""
+
+        self.phase_counter = 0
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
         """
-        Set the reference to PiBot object.
+        Set the reference to the robot instance.
 
-        Returns:
-          None
+        NB! This is required for automatic testing.
+        You are not expected to call this method in your code.
+
+        Arguments:
+          robot -- the reference to the robot instance.
+
         """
         self.robot = robot
 
-    def get_state(self):
-        """Return the current state."""
-        print("------")
-        print("left lasers")
-        print(f"dis {self.left_side} {self.left_diagonal} {self.left_back}")
-        print("right lasers")
-        print(f"dis {self.right_side} {self.right_diagonal} {self.right_back}")
-        print("front lasers")
-        print(f"dis {self.fl} {self.fm} {self.fr}")
-
     def sense(self):
-        """Read values from sensors via PiBot API into class variables (self)."""
-        # front 10-100 cm
-        self.fl = self.robot.get_front_left_laser()
-        self.fm = self.robot.get_front_middle_laser()
-        self.fr = self.robot.get_front_right_laser()
-
-        # 2-16 cm
-        self.left_back = self.robot.get_rear_left_straight_ir()
-        self.left_diagonal = self.robot.get_rear_left_diagonal_ir()
-        self.left_side = self.robot.get_rear_left_side_ir()
-
-        self.right_back = self.robot.get_rear_right_straight_ir()
-        self.right_diagonal = self.robot.get_rear_right_diagonal_ir()
-        self.right_side = self.robot.get_rear_right_side_ir()
+        """Sensing block."""
+        self.left_wheel_encoder = self.robot.get_left_wheel_encoder()
+        self.current_rotation = self.robot.get_rotation()
+        self.previous_front_middle_laser = self.front_middle_laser
+        self.front_middle_laser = self.robot.get_front_middle_laser()
 
     def act(self):
-        """."""
-        self.robot.set_right_wheel_speed(self.right_wheel)
-        self.robot.set_left_wheel_speed(self.left_wheel)
+        """Acting block."""
+        self.robot.set_left_wheel_speed(self.left_wheel_speed)
+        self.robot.set_right_wheel_speed(self.right_wheel_speed)
 
     def plan(self):
-        """Perform the planning steps as required by the problem statement."""
-        if self.state == "Find first object.":
-            if self.fm < 0.55:
-                self.right_wheel, self.left_wheel = self.speed, self.speed
-                if self.fm <= 0.1:
-                    self.ultra_spin()
-                    self.shutdown = True
-            else:
-                self.left_wheel = - self.speed
-                self.right_wheel = self.speed
+        """Planning block."""
+        print(f"Laser value: {self.front_middle_laser}")
 
-    def ultra_spin(self):
-        """Make a spin on 90 degrees."""
-        print("spin")
-        self.left_wheel = - self.speed
-        self.right_wheel = self.speed
-        self.robot.sleep(5)
-        self.act()
+        if self.first_object_found is False or self.second_object_found is False:
+            self.robot_current_state = "scan"
+            self.objects_localization()
+
+        elif self.adjusting_position is True:
+            if self.phase_counter < 5:
+                print(f"Adjusting phase: {self.position_adjusting_phase}")
+                print(self.robot_current_state)
+                print(f"Wheel speeds: {self.left_wheel_speed, self.right_wheel_speed}")
+                if self.position_adjusting_phase == "change":
+                    self.change_from_one_obstacle_to_another()
+                elif self.position_adjusting_phase == "second":
+                    self.change_position_compared_to_second_object()
+                elif self.position_adjusting_phase == "first":
+                    self.change_position_compared_to_first_object()
+            else:
+                self.robot_current_state = "stop"
+                print("OBJECT FOUND.")
+                print(
+                    f"DISTANCE FROM FIRST: {self.distance_from_first_object}, DISTANCE FROM SECOND: {self.distance_from_second_object}, DISTANCE FROM EACHOTHER: {self.triangle_side_length}")
+
+        self.set_wheel_speeds()
+
+    def objects_localization(self):
+        """Method for detecting objects and calculating distances."""
+        if self.previous_front_middle_laser - self.front_middle_laser > 0.3 and abs(self.left_wheel_encoder) > 3:
+            if self.first_object_found is False:
+                print("FIRST OBJECT")
+                self.first_object_found = True
+                self.distance_from_first_object = self.front_middle_laser
+                self.first_object_location_angle = self.current_rotation
+            elif self.first_object_found is True and self.second_object_found is False:
+                print("SECOND OBJECT")
+                self.second_object_found = True
+                self.distance_from_second_object = self.front_middle_laser
+                self.second_object_location_angle = self.current_rotation
+                self.robot_current_state = "stop"
+
+                initial_angle_between_objects_in_degrees = self.first_object_location_angle - self.second_object_location_angle
+                initial_angle_between_objects_in_radians = math.radians(initial_angle_between_objects_in_degrees)
+                self.triangle_side_length = math.sqrt((self.distance_from_first_object ** 2)
+                                                      + (self.distance_from_second_object ** 2) - 2
+                                                      * self.distance_from_first_object
+                                                      * self.distance_from_second_object
+                                                      * math.cos(initial_angle_between_objects_in_radians))
+                self.adjusting_position = True
+                self.position_adjusting_phase = "second"
+                print("Starting adjusting position")
+                print(f"Angle with objects: {initial_angle_between_objects_in_degrees}")
+                print(f"Triangle side length: {self.triangle_side_length}")
+
+    def change_from_one_obstacle_to_another(self):
+        """Method to look for other obstacle."""
+        if self.previous_front_middle_laser - self.front_middle_laser < 0.3:
+            if self.last_adjusted_by == "second":
+                self.robot_current_state = "hard turn right"
+            elif self.last_adjusted_by == "first":
+                self.robot_current_state = "hard turn left"
+        else:
+            if self.last_adjusted_by == "second":
+                self.position_adjusting_phase = "first"
+            elif self.last_adjusted_by == "first":
+                self.position_adjusting_phase = "second"
+
+    def change_position_compared_to_second_object(self):
+        """Method for changing position compared to second object."""
+        if abs(self.triangle_side_length - self.front_middle_laser) > 0.01:
+            if self.front_middle_laser > self.triangle_side_length:
+                self.robot_current_state = "drive forward"
+                self.distance_from_second_object = self.front_middle_laser
+            elif self.distance_from_second_object < self.triangle_side_length:
+                self.robot_current_state = "reverse"
+                self.distance_from_second_object = self.front_middle_laser
+        else:
+            self.phase_counter += 1
+            print("OTHER OBSTACLE")
+            self.distance_from_second_object = self.front_middle_laser
+            self.last_adjusted_by = "second"
+            self.position_adjusting_phase = "change"
+
+    def change_position_compared_to_first_object(self):
+        """Method for chaning position compared to first object."""
+        if abs(self.triangle_side_length - self.front_middle_laser) > 0.01:
+            if self.front_middle_laser > self.triangle_side_length:
+                self.robot_current_state = "drive forward"
+                self.distance_from_first_object = self.front_middle_laser
+            elif self.front_middle_laser < self.triangle_side_length:
+                self.robot_current_state = "reverse"
+                self.distance_from_first_object = self.front_middle_laser
+        else:
+            self.phase_counter += 1
+            self.distance_from_first_object = self.front_middle_laser
+            self.last_adjusted_by = "first"
+            self.position_adjusting_phase = "change"
+
+    def set_wheel_speeds(self):
+        """Method for setting wheel speeds according to state."""
+        if self.robot_current_state == "drive forward":
+            self.left_wheel_speed = 8
+            self.right_wheel_speed = 8
+        if self.robot_current_state == "stop":
+            self.left_wheel_speed = 0
+            self.right_wheel_speed = 0
+        if self.robot_current_state == "hard turn left":
+            self.left_wheel_speed = -8
+            self.right_wheel_speed = 8
+        if self.robot_current_state == "scan":
+            self.left_wheel_speed = -8
+            self.right_wheel_speed = 8
+
+        if self.robot_current_state == "reverse":
+            self.left_wheel_speed = -8
+            self.right_wheel_speed = -8
+        if self.robot_current_state == "hard turn right":
+            self.right_wheel_speed = -8
+            self.left_wheel_speed = 8
 
     def spin(self):
-        """The main loop of the robot."""
-        while not self.shutdown:
+        """Looping block."""
+        while True:
             self.sense()
-            self.get_state()
             self.plan()
             self.act()
             self.robot.sleep(0.05)
 
 
 def main():
-    """Create a Robot object and spin it."""
+    """
+    The main function.
+
+    Create a Robot class object and run it.
+    """
     robot = Robot()
     robot.spin()
 
