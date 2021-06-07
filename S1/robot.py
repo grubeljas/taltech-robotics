@@ -425,19 +425,22 @@ class Robot:
         if self.get_state() == "move" and self.final == 0:
             if self.camera_objects:
                 print("movingtest", self.moveint, self.camera_objects[0][2], "in front", self.move_closer, "closer")
-                self.temp_object =  self.camera_objects[0][2]
-            if len(self.camera_objects) < 2 and (self.camera_objects is None or self.temp_object > self.move_closer or self.camera_objects[0][2] > 90):
-                self.seek_noise_filter += 1
-                if self.seek_noise_filter > 2:
-                    self.set_state("seek")
-                    self.objects = tuple()
-                    self.camera_objects = []
-                    self.left_direction = -1
-                    self.reset_pid()
-                    self.move_to_degree = 0
-                    self.moveint = 0
+                self.temp_object = self.camera_objects[0][2]
+            if len(self.camera_objects) < 2 and (self.camera_objects is None or self.temp_object > self.move_closer):
+                if len(self.camera_objects) < 2 and self.camera_objects[0][2] > 90:
+                    self.seek_noise_filter += 1
+                    if self.seek_noise_filter > 2:
+                        self.set_state("seek")
+                        self.objects = tuple()
+                        self.camera_objects = []
+                        self.left_direction = -1
+                        self.reset_pid()
+                        self.move_to_degree = 0
+                        self.moveint = 0
+                        self.seek_noise_filter = 0
+                        self.objects_cache = []
+                else:
                     self.seek_noise_filter = 0
-                    self.objects_cache = []
             else:
                 self.seek_noise_filter = 0
             print("after_moving_test")
