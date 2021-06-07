@@ -93,7 +93,10 @@ class Robot:
         """
         # Your code here...
         self.yaw = self.encoder_odometry[2] + (self.get_yaw() * self.cycle_time)
-        self.encoder_odometry = (self.encoder_odometry[0] + (self.get_x_speed(self.get_yaw()) * self.cycle_time), self.encoder_odometry[1] + (self.get_y_speed(self.get_yaw()) * self.cycle_time), self.yaw)
+        if abs(self.angularLeftVelocity + self.angularRightVelocity) <= 0.1:
+            self.encoder_odometry = (self.encoder_odometry[0], self.encoder_odometry[1], self.yaw)
+        else:
+            self.encoder_odometry = (self.encoder_odometry[0] + (self.get_x_speed(self.get_yaw()) * self.cycle_time), self.encoder_odometry[1] + (self.get_y_speed(self.get_yaw()) * self.cycle_time), self.yaw)
         return self.encoder_odometry
 
     # END ODOMETRY
