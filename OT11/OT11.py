@@ -220,7 +220,6 @@ class Robot:
         self.last_time = self.time
         self.left_last_encoder = self.left_encoder
         self.right_last_encoder = self.right_encoder
-        pass
 
     def spin(self):
         """Spin loop."""
