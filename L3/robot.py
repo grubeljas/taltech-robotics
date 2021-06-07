@@ -23,6 +23,13 @@ class Robot:
         self.right_ir = 0
         self.right_ir_initial = 0
 
+        self.rn = 1.0
+        self.ln = 1.0
+
+        self.speed = 8
+        self.adjust_low = 4
+        self.adjust_high = 5
+
         self.crossroad_turn = "left"
         self.starting_orientation = None
         self.current_orientation = None
@@ -90,6 +97,76 @@ class Robot:
             self.turn_right()
         else:
             self.turn_left()
+
+    def calculate_encoders(self):
+        """Adjust both encoders."""
+        rightep = self.robot.get_right_wheel_encoder()
+        leftep = self.robot.get_left_wheel_encoder()
+        self.act(self.speed, self.speed)
+        self.robot.sleep(0.05)
+        self.act(0, 0)
+        righte = self.robot.get_right_wheel_encoder()
+        lefte = self.robot.get_left_wheel_encoder()
+        self.act(-self.speed, -self.speed)
+        self.robot.sleep(0.05)
+        self.act(0, 0)
+        right = righte - rightep
+        left = lefte - leftep
+        if right <= 0:
+            self.calc_right()
+        if left <= 0:
+            self.calc_left()
+
+    def adjust_little(self):
+        """Adjust both encoders a little bit."""
+        left = abs(self.left_encoder - self.left_encoder_previous)
+        right = abs(self.right_encoder - self.right_encoder_previous)
+
+        if left > self.adjust_low:
+            self.ln -= 0.002
+        elif left < self.adjust_low:
+            self.ln += 0.002
+
+        if right > self.adjust_low:
+            self.rn -= 0.002
+        elif right < self.adjust_low:
+            self.rn += 0.002
+
+    def calc_left(self):
+        """Adjust left encoder."""
+        while True:
+            print(self.ln, self.rn)
+            prev = self.robot.get_left_wheel_encoder()
+            self.act(self.speed, 0)
+            self.robot.sleep(0.05)
+            self.act(0, 0)
+            cur = self.robot.get_left_wheel_encoder()
+            change = cur - prev
+            if change <= 0:
+                self.ln += 0.002
+            else:
+                break
+        self.act(-self.speed, 0)
+        self.robot.sleep(0.05)
+        self.act(0, 0)
+
+    def calc_right(self):
+        """Adjust the right encoder."""
+        while True:
+            print(self.ln, self.rn)
+            previous = self.robot.get_right_wheel_encoder()
+            self.act(0, self.speed)
+            self.robot.sleep(0.05)
+            self.act(0, 0)
+            current = self.robot.get_right_wheel_encoder()
+            change = current - previous
+            if change <= 0:
+                self.rn += 0.002
+            else:
+                break
+        self.act(0, -self.speed)
+        self.robot.sleep(0.05)
+        self.act(0, 0)
 
     def get_line_direction(self):
         """
@@ -202,6 +279,7 @@ class Robot:
 
     def plan(self):
         """Plan - decides what to do based on the information."""
+        self.adjust_little()
         if self.state == "Finding the line":
             self.find_the_line()
         elif self.state == "Following the line":
@@ -213,10 +291,10 @@ class Robot:
             self.left_wheel_speed = 0
             self.right_wheel_speed = 0
 
-    def act(self):
+    def act(self, left_wheel_speed, right_wheel_speed):
         """Act - does stuff based on the decision made."""
-        self.robot.set_left_wheel_speed(self.left_wheel_speed)
-        self.robot.set_right_wheel_speed(self.right_wheel_speed)
+        self.robot.set_left_wheel_speed(left_wheel_speed * self.ln)
+        self.robot.set_right_wheel_speed(right_wheel_speed * self.rn)
 
     def spin(self):
         """
@@ -224,6 +302,7 @@ class Robot:
 
         This loop is expected to call sense, plan, act methods cyclically.
         """
+        self.calculate_encoders()
         while not self.shutdown:
             self.sense()
             if self.front_right_laser != 2.0:
@@ -232,7 +311,7 @@ class Robot:
                 print(f"Middle:{self.front_middle_laser}")
             #  print(f"Left sensor: {self.center_left_line_sensor}, Right sensor: {self.center_right_line_sensor}")
             self.plan()
-            self.act()
+            self.act(self.left_wheel_speed, self.right_wheel_speed)
             self.robot.sleep(0.05)
             if self.robot.get_time() > 2000:
                 self.shutdown = True
