@@ -1,495 +1,499 @@
-"""S1."""
+"""."""
 import PiBot
-import statistics
-import math
-
-#TODO make buffers for objects so that distance is more reliable. Fix end condition (final overrides everything else)
 
 
 class Robot:
     """Robot class."""
 
-    def __init__(self, state="seek"):
-        """Class constructor."""
+    def __init__(self):
+        """Constructor for robot."""
         self.robot = PiBot.PiBot()
-        self.state = state
         self.shutdown = False
-        self.front_laser = 0
-        self.front_laser_cache = []
 
-        self.rotation = 0
-        self.front_laser_degree_cache = []
-        self.object_locations_cache = []
-        self.object_locations = []
-        self.object_degrees = []
-
-        self.WHEEL_DIAMETER = 0.03
-        self.AXIS_LENGTH = 0.132
-        self.noise_filter = 0
-
-        # wheels
-        self.base_speed = 8
-        self.left_speed = -8
-        self.right_speed = 8
-        self.driving_speed = [-8, 8, 12]
-
-        # start driving coordinates
-        self.start_left = 0
-        self.start_right = 0
-
-        # # PID
-        self.P = 0
-        self.Integral = 0
-        self.D = 0
-        self.left_PID = 0
-        self.right_PID = 0
-        self.error_left = 0
-        self.error_dt_left = 0
-        self.error_sum_left = 0
-        self.error_diff_left = 0
-        self.previous_error_left = 0
-
-        self.error_right = 0
-        self.error_dt_right = 0
-        self.error_sum_right = 0
-        self.error_diff_right = 0
-        self.previous_error_right = 0
-
-        # speeds
-        self.left_desired_speed = 0
-        self.right_desired_speed = 0
-        self.actual_left_speed = 0
-        self.actual_right_speed = 0
-
+        self.left_encoder_previous = 0
         self.left_encoder = 0
-        self.left_last_encoder = 0
-        self.left_cycle_encoder = 0
         self.right_encoder = 0
-        self.right_last_encoder = 0
-        self.right_cycle_encoder = 0
+        self.right_encoder_previous = 0
 
-        # time
-        self.cycle_time = 0
-        self.time = 0
-        self.last_time = 0
+        self.right_n = 1.0
+        self.left_n = 1.0
 
-        # wheel directions
-        self.left_direction = -1
-        self.right_direction = 1
+        self.front_left = 2
+        self.front_middle = 2
+        self.front_right = 2
 
-        # assisting parameters when moving to object
-        self.left_desired_speed_add = 0
-        self.right_desired_speed_add = 0
-        self.stop_noise_filter = 0
+        self.fm4 = 0.5
+        self.fm3 = 0.5
+        self.fm2 = 0.5
+        self.fm1 = 0.5
+        self.front = [0]
+        self.front_left = [0]
+
+        self.speed = 8
+        self.change_low = 4
+        self.change_high = 5
+
+        self.blue_angle = 0
+        self.number = 100
         self.rotation = 0
+        self.rotation_threshold = 0
+        self.rotation_value = 45
+        self.reached_blue = False
+        self.has_seen_blue = False
+        self.lined_up = False
+        self.front_saw_blue = False
+        self.wait_1_cycle = False
+        self.completed = False
+        self.turn_right = True
 
-        # ODOMETRY
+        self.red_number = 50
+        self.drive_forward = 0
+        self.rotation_start = -360
+        self.rotation_add = 30
+        self.red_angle = 0
+        self.current_rotation = 0
+        self.has_seen_red = False
+        self.final = False
+        self.lined_up_red = False
+        self.ready = False
 
-        # angular velocity
-        self.angularLeftVelocity = 0
-        self.angularRightVelocity = 0
-        self.IMU_odometry = (0, 0, 0)
+        self.red_left = 0
+        self.red_right = 0
+        self.red_radius = 0
 
-        # Object locations
-        self.object_x = 0
-        self.object_y = 0
-        self.object2_x = 0
-        self.object2_y = 0
+        self.end_left = 0
+        self.end_right = 0
+        self.long_drive = False
+        self.stand_still = False
+        self.forward_once = True
 
-        self.object_halfway_x = 0
-        self.object_halfway_y = 0
+        self.left_diagonal = None
+        self.left_back = None
+        self.left_side = None
 
-        self.len_of_side = 0
-        self.change_x = 0
-        self.change_y = 0
-
-        self.stand_at_x = 1000
-        self.stand_at_y = 1000
-        self.move_to_degree = 0
-
-        self.test = 0
-        self.moveint = 0
-        self.final = 0
-        self.wincondition = 0
-        self.move_closer = 0
-        self.move_further = 0
-
-        # CAMERA
-        self.field_of_view = self.robot.CAMERA_FIELD_OF_VIEW
-        self.camera_resolution = self.robot.CAMERA_RESOLUTION
-        self.objects = ()
-        self.camera_objects = []
-        self.objects_cache = []
-        self.seek_noise_filter = 0
-        self.temp_object = 0
+        self.right_diagonal = None
+        self.right_back = None
+        self.right_side = None
 
     def set_robot(self, robot: PiBot.PiBot()) -> None:
-        """Set Robot reference."""
+        """
+        Set the reference to PiBot object.
+        Returns:
+          None
+        """
         self.robot = robot
 
-    def get_object_location(self):
-        """Calculate object coordinates, where to move coordinates and then rotation angle for movement."""
-        if self.final == 1:
-            pass
-        elif self.objects[0][2] < self.objects[1][2]:
-            self.move_to_degree = self.objects[0][3]
-            self.move_further = self.objects[0][2]
-            self.move_closer = self.objects[1][2]
-            print("red", self.objects[0][3])
-        elif self.objects[1][2] <= self.objects[0][2]:
-            self.move_to_degree = self.objects[1][3]
-            self.move_further = self.objects[1][2]
-            self.move_closer = self.objects[0][2]
-            print("blue", self.objects[1][3])
-        if len(self.objects) > 1 and self.camera_objects:
-            print("-BEFORE FINAL,", self.objects[0][3], self.objects[1][3], self.objects[0][3] - self.objects[1][3], self.camera_objects[0])
-        if self.camera_objects and self.objects[1]:
-            if (130 < abs(self.objects[0][3] - self.objects[1][3]) < 230) and self.camera_objects[0][0] == "blue sphere" and abs(self.objects[0][2] - self.camera_objects[0][2]) < 15:
-                self.final = 1
-                self.move_to_degree = self.objects[0][3]+90
-                self.wincondition = self.objects[0][2]
-                self.left_direction = -1
-        print("moving")
+    def get_state(self):
+        """Return the current state."""
 
-    def get_x_speed(self, yaw):
-        """X coordinate change in time."""
-        return ((self.robot.WHEEL_DIAMETER / 2) / 2 * (self.angularLeftVelocity + self.angularRightVelocity)) * math.cos(math.radians(yaw))
-
-    def get_y_speed(self, yaw):
-        """Y coordinate change in time."""
-        return ((self.robot.WHEEL_DIAMETER / 2) / 2 * (self.angularLeftVelocity + self.angularRightVelocity)) * math.sin(math.radians(yaw))
-
-    def get_imu_odometry(self):
-        """
-        Return the IMU odometry.
-
-        Returns:
-           A tuple with x, y coordinates and yaw angle (x, y, yaw)
-           based on encoder and IMU data. The units must be
-           (meters, meters, radians).
-        """
-        self.IMU_odometry = (self.IMU_odometry[0] + (self.get_x_speed(self.rotation) * self.cycle_time), self.IMU_odometry[1] + (self.get_y_speed(self.rotation) * self.cycle_time), self.rotation)
-        return self.IMU_odometry
-
-    def travel_to_object(self):
-        """Adjust speed when moving towards object, aiming for its center."""
-        if self.rotation > self.move_to_degree:
-            self.left_desired_speed_add = 60
-            self.right_desired_speed_add = 0
-        elif self.rotation < self.move_to_degree:
-            self.left_desired_speed_add = 0
-            self.right_desired_speed_add = 60
-
-    def reset_pid(self):
-        """Reset PID when direction is changed."""
-        self.error_left = 0
-        self.error_dt_left = 0
-        self.error_sum_left = 0
-        self.error_diff_left = 0
-        self.previous_error_left = 0
-
-        self.error_right = 0
-        self.error_dt_right = 0
-        self.error_sum_right = 0
-        self.error_diff_right = 0
-        self.previous_error_right = 0
-
-    def if_found_object(self):
-        """If object is found, rotate back to its center and start moving forward."""
-        if len(self.objects) > 1:
-            print(self.rotation, "FOUND_ROTATION", self.move_to_degree, "MOVETODEG", self.stand_at_x, self.stand_at_y, "X,Y")
-            if abs(self.rotation - self.move_to_degree) < 5:
-                if self.left_direction == -1:
-                    self.reset_pid()
-                print("gethere?")
-                self.left_direction = 1
-                self.right_direction = 1
-                if self.get_state != "move":
-                    self.set_state("move")
-
-    def set_pid_parameters(self, p: float, i: float, d: float):
-        """
-        Set the PID parameters.
-
-        Arguments:
-          p -- The proportional component.
-          i -- The integral component.
-          d -- The derivative component.
-        """
-        # Your code here...
-        self.P = p
-        self.Integral = i
-        self.D = d
-
-    def set_left_wheel_speed(self, speed: float):
-        """
-        Set the desired setpoint.
-
-        Arguments:
-          speed -- The speed setpoint for the controller.
-        """
-        self.left_desired_speed = speed
-
-    def set_right_wheel_speed(self, speed: float):
-        """
-        Set the desired setpoint.
-
-        Arguments:
-          speed -- The speed setpoint for the controller.
-        """
-        self.right_desired_speed = speed
-
-    def get_left_wheel_pid_output(self):
-        """
-        Get the controller output value for the left motor.
-
-        Returns:
-          The controller output value.
-        """
-        return self.left_PID
-
-    def get_right_wheel_pid_output(self):
-        """
-        Get the controller output value for the right motor.
-
-        Returns:
-          The controller output value.
-        """
-        return self.right_PID
-
-    def calculate_left_pid_value(self):
-        """Calculate left PID value."""
-        self.error_left = (self.left_desired_speed + self.left_desired_speed_add) - self.actual_left_speed
-        if self.cycle_time > 0:
-            self.error_diff_left = (self.error_left - self.previous_error_left) / self.cycle_time
-        else:
-            self.error_diff_left = 0
-        self.previous_error_left = self.error_left
-        self.error_dt_left += self.error_left * self.cycle_time
-        result = self.P * self.error_left + self.Integral * self.error_dt_left + self.D * self.error_diff_left
-        return result
-
-    def calculate_right_pid_value(self):
-        """Calculate right PID value."""
-        self.error_right = (self.right_desired_speed + self.right_desired_speed_add) - self.actual_right_speed
-        if self.cycle_time > 0:
-            self.error_diff_right = (self.error_right - self.previous_error_right) / self.cycle_time
-        else:
-            self.error_diff_right = 0
-        self.previous_error_right = self.error_right
-        self.error_dt_right += self.error_right * self.cycle_time
-        result = self.P * self.error_right + self.Integral * self.error_dt_right + self.D * self.error_diff_right
-        return result
-
-    def get_actual_speed_left(self):
-        """Calculate actual speed of left wheel."""
-        if not self.cycle_time == 0:
-            return self.left_cycle_encoder / self.cycle_time
-        else:
-            return 0
-
-    def get_actual_speed_right(self):
-        """Calculate actual speed of right wheel."""
-        if not self.cycle_time == 0:
-            return self.right_cycle_encoder / self.cycle_time
-        else:
-            return 0
-
-    def get_state(self) -> str:
-        """
-        Get the state.
-
-        Returns:
-          The state as a string.
-        """
-        return self.state
-
-    def set_state(self, state: str):
-        """
-        Set the current state.
-
-        Arguments:
-          state - the state as a string.
-        """
-        print("CHANGEDSTATE FROM ", self.state, "TO", state)
-        self.state = state
-
-    def get_objects(self) -> list:
-        """
-        Return the list with the detected objects so far.
-
-        (i.e., add new objects to the list as you detect them).
-
-        Returns:
-          The list with detected object angles, the angles are in
-          degrees [0..360), 0 degrees being the start angle and following
-          the right-hand rule (e.g., turning left 90 degrees is 90, turning
-          right 90 degrees is 270 degrees).
-        """
-        return self.object_degrees
-
-    def get_front_middle_laser(self):
-        """
-        Return the filtered value.
-
-        Returns:
-          None if filter is empty, filtered value otherwise.
-        """
-        if self.front_laser < 0.5:
-            self.noise_filter += 1
-            self.front_laser_degree_cache.insert(0, self.rotation)
-            self.object_locations_cache.insert(0, self.front_laser)
-        elif self.noise_filter > 0:
-            self.noise_filter -= 1
-            self.front_laser_degree_cache.pop(0)
-            self.object_locations_cache.pop(0)
-        if self.front_laser < 0.5 and self.noise_filter > 3:
-            self.front_laser_degree_cache.insert(0, self.rotation)
-        elif self.front_laser_degree_cache and self.noise_filter > 3:
-            self.object_degrees.append(statistics.median(self.front_laser_degree_cache))
-            self.object_locations.append(statistics.median(self.object_locations_cache))
-            self.front_laser_degree_cache.clear()
-            self.object_locations_cache.clear()
-            self.noise_filter = 0
-
-    def process_camera_data(self):
-        """Calculate x and y based on camera data."""
-        self.camera_objects = tuple(self.camera_objects)
-        for item in self.camera_objects:
-            self.deg = self.get_object_angle(item[1][0])
-            current = item + ((self.rotation) % 360,)
-            if not self.objects:
-                self.objects = (current,)
-                break
-            elif not current[0] == self.objects[-1][0] and len(self.objects) < 2:
-                self.objects = self.objects + (current,)
-
-        objects_copy = ()
-        for item in self.objects:
-            x = 25/(item[2] * math.cos(math.radians(item[3])))
-            y = 25/(item[2] * math.sin(math.radians(item[3])))
-            objects_copy += ((item[0], (x, y), item[2], item[3]),)
-        self.objects = objects_copy
-        if self.objects:
-            if len(self.objects_cache) >= 5:
-                self.objects_cache.pop(0)
-            self.objects_cache.append(self.objects)
-            if len(self.objects_cache[-1]) != len(self.objects):
-                self.objects_cache = []
-            median_array = []
-            if len(self.objects_cache) >= 5:
-                for k in range(len(self.objects_cache)):
-                    median_array.append(self.objects_cache[k][0][2])
-                median = statistics.median(median_array)
-                for i in range(len(self.objects_cache)):
-                    if self.objects_cache[i][0][2] == median:
-                        self.objects = self.objects_cache[i]
-                return self.objects
-        return None
-
-    def get_object_angle(self, x):
-        """calculate  object angle relative to robot."""
-        deg = ((self.camera_resolution[0] / 2 - x) / self.camera_resolution[0]) * self.field_of_view[0]
-        return deg
+    def act(self, left_wheel, right_wheel):
+        """."""
+        self.robot.set_left_wheel_speed(left_wheel * self.left_n)
+        self.robot.set_right_wheel_speed(right_wheel * self.right_n)
 
     def sense(self):
-        """Sense method according to the SPA architecture."""
-        self.front_laser = self.robot.get_front_middle_laser()
-        self.camera_objects = self.robot.get_camera_objects()
-        self.rotation = self.robot.get_rotation() % 360
-
-        self.time = self.robot.get_time()
-        self.cycle_time = self.time - self.last_time
+        """Read values from sensors via PiBot  API into class variables (self)."""
         self.left_encoder = self.robot.get_left_wheel_encoder()
         self.right_encoder = self.robot.get_right_wheel_encoder()
-        self.left_cycle_encoder = self.left_encoder - self.left_last_encoder
-        self.right_cycle_encoder = self.right_encoder - self.right_last_encoder
-        self.actual_left_speed = self.get_actual_speed_left()
-        self.actual_right_speed = self.get_actual_speed_right()
+        self.right_encoder_previous = self.right_encoder
+        self.left_encoder_previous = self.left_encoder
 
-        self.left_PID = self.calculate_left_pid_value()
-        self.right_PID = self.calculate_right_pid_value()
+        self.front_middle = self.robot.get_front_middle_laser()
+        self.front_left = self.robot.get_front_left_laser()
+        self.front_right = self.robot.get_front_right_laser()
 
-        self.last_time = self.time
-        self.left_last_encoder = self.left_encoder
-        self.right_last_encoder = self.right_encoder
+        if self.front_middle > 0.5:
+            self.front_middle = 0.5
+        self.front.append(self.front_middle)
+        if len(self.front) == 6:
+            self.front.pop(0)
 
-        if self.cycle_time > 0:
-            self.angularLeftVelocity = ((math.radians(self.left_cycle_encoder) / self.cycle_time))
-            self.angularRightVelocity = ((math.radians(self.right_cycle_encoder) / self.cycle_time))
+        if self.front_left > 0.5:
+            self.front_left = 0.5
+        self.front_left.append(self.front_left)
+        if len(self.front_left) == 6:
+            self.front_left.pop(0)
+
+        self.left_diagonal = self.robot.get_rear_left_diagonal_ir()
+        self.left_back = self.robot.get_rear_left_straight_ir()
+        self.left_side = self.robot.get_rear_left_side_ir()
+
+        self.right_diagonal = self.robot.get_rear_right_diagonal_ir()
+        self.right_back = self.robot.get_rear_right_straight_ir()
+        self.right_side = self.robot.get_rear_right_side_ir()
+
+        self.rotation = self.robot.get_rotation()
+
+    def set_rotation(self, blue=True):
+        """Set the robot rotation to the needed value (blue or red angle)."""
+        if blue:
+            difference = abs(self.rotation - self.blue_angle)
+            if difference < 0.25:
+                self.lined_up = True
+                self.stand_still = True
+                self.act(0, 0)
+            elif self.rotation < self.blue_angle:
+                self.stand_still = False
+                self.act(-self.speed, self.speed)
+            elif self.rotation > self.blue_angle:
+                self.stand_still = False
+                self.act(self.speed, -self.speed)
+
         else:
-            self.angularLeftVelocity = 0
-            self.angularRightVelocity = 0
+            difference = abs(self.rotation - self.red_angle)
+            if difference < 0.25:
+                self.lined_up_red = True
+                self.stand_still = True
+                self.act(0, 0)
+                if self.red_left == 0:
+                    self.red_left = self.left_encoder
+                    self.red_right = self.right_encoder
+            elif self.rotation < self.red_angle:
+                self.stand_still = False
+                self.act(-self.speed, self.speed)
 
-        self.get_imu_odometry()
-        if self.get_state() == "move" and self.final == 0:
-            if self.camera_objects:
-                print("movingtest", self.moveint, self.camera_objects[0][2], "in front", self.move_closer, "closer")
-                self.temp_object = self.camera_objects[0][2]
-            if len(self.camera_objects) < 2 and (self.camera_objects is None or self.temp_object > self.move_closer):
-                if len(self.camera_objects) < 2 and self.camera_objects[0][2] > 90:
-                    self.seek_noise_filter += 1
-                    if self.seek_noise_filter > 2:
-                        self.set_state("seek")
-                        self.objects = tuple()
-                        self.camera_objects = []
-                        self.left_direction = -1
-                        self.reset_pid()
-                        self.move_to_degree = 0
-                        self.moveint = 0
-                        self.seek_noise_filter = 0
-                        self.objects_cache = []
-                else:
-                    self.seek_noise_filter = 0
+            elif self.rotation > self.red_angle:
+                self.stand_still = False
+                self.act(self.speed, -self.speed)
+
+    def drive_half(self, a):
+        """Drive the half the distence calculated with the camera."""
+        distance = self.robot.WHEEL_DIAMETER * 3.1415 * (self.left_encoder - self.red_left) / 360
+        if distance > a * 0.4:
+            self.current_rotation = self.rotation
+            self.final = True
+        else:
+            self.act(self.speed, self.speed)
+        pass
+
+    def drive_forward_025_units(self):
+        """Drive the robot forward 25(may change) units."""
+        if self.forward_once:
+            start_left = self.left_encoder
+            start_right = self.right_encoder
+            wh = self.robot.WHEEL_DIAMETER
+            a = (0.10 * 360) / (wh * 3.1415)
+            self.end_left = start_left + a
+            self.end_right = start_right + a
+            self.forward_once = False
+
+        if self.left_encoder > self.end_left or self.right_encoder > self.end_right:
+            self.act(0, 0)
+            self.stand_still = True
+            self.take_picture()
+            self.lined_up = False
+            self.forward_once = True
+            self.completed = True
+        else:
+            self.stand_still = False
+            self.act(self.speed, self.speed)
+
+    def turn_until_front_left_sees(self):
+        """Turn the robot until front laser sees object."""
+        if self.filter_front_left_close():
+            self.ready = True
+            self.rotation_start = -360
+            self.act(0, 0)
+            self.stand_still = True
+        else:
+            self.stand_still = False
+            self.act(self.speed, -self.speed)
+
+    def filter_front_left_close(self):
+        """Filter front left laser until it sees object and it makes sure its not too close."""
+        lista = self.front_left
+        list_one = list(filter(lambda x: x < 0.15, lista))
+        list_two = list(filter(lambda x: x < 0.2, lista))
+        c = len(list_one)
+        if c > len(lista) - c:
+            self.drive_forward = 200
+        b = len(list_two)
+        a = len(lista) - b
+        return b > a
+
+    def filter(self):
+        """Filter object (0.5)."""
+        list_one = self.front
+        a = list_one.count(0.5)
+        b = len(list_one) - a
+        return b > a
+
+    def filterfl(self):
+        """Filter object with front left laser."""
+        lista = self.front_left
+        a = lista.count(0.5)
+        b = len(lista) - a
+        return b > a
+
+    def filter2(self):
+        """Filter object with front laser if it is close."""
+        lista = self.front
+        listb = list(filter(lambda x: x < 0.15, lista))
+        b = len(listb)
+        a = len(lista) - b
+        return b - 1 > a
+
+    def average_front_left(self):
+        """Give the avraged value of laser."""
+        value = 0
+        for i in self.front:
+            value += i
+        return value / 5
+
+    def rotate(self):
+        """Rotate the robot 90(may change) degrees."""
+        if self.rotation < self.current_rotation + 80:
+            self.act(-self.speed, self.speed)
+            self.stand_still = False
+        else:
+            self.stand_still = True
+            self.act(self.speed, self.speed)
+            self.robot.sleep(2)
+            self.act(0, 0)
+            self.shutdown = True
+
+    def plan1(self):
+        """Rotate robot right."""
+        self.stand_still = False
+        self.act(self.speed, -self.speed)
+
+    def plan2(self):
+        """Calculate next turn threshold and take picture."""
+        self.act(0, 0)
+        self.rotation_threshold = ((abs(self.rotation) // self.rotation_value) + 1) * self.rotation_value
+        self.take_picture()
+
+    def plan3(self):
+        """If didnt find object then drive forward."""
+        self.long_drive = True
+        self.act(-self.speed, self.speed)
+        self.robot.sleep(4)
+        self.act(self.speed + 2, self.speed + 2)
+        self.robot.sleep(15)
+        self.sense()
+        self.rotation_threshold = (abs(self.rotation) // self.rotation_value) * self.rotation_value
+
+    def plan4(self):
+        """Drive towards the object."""
+        if self.filter():
+            self.number -= 1
+            if self.number < 0:
+                self.number = 75
+                self.act(0, 0)
+                self.lined_up = False
+                self.stand_still = True
+                self.take_picture()
             else:
-                self.seek_noise_filter = 0
-            print("after_moving_test")
-        if self.get_state() == "seek":
-            self.process_camera_data()
-        if len(self.objects) > 1:
-            self.get_object_location()
-        print(self.objects, "OBJECTS", self.move_to_degree, "MOVETODEGREE", self.state, "STATE")
+                self.front_saw_blue = True
+                self.act(self.speed, self.speed)
+                self.stand_still = False
+                self.turn_right = True
+                if self.filter2():
+                    self.reached_blue = True
+                    self.act(0, 0)
+                    self.stand_still = True
+        elif self.front_saw_blue:
+            self.act(self.speed, self.speed)
+            self.robot.sleep(0.15)
+            self.act(0, 0)
+            self.lined_up = False
+            self.stand_still = True
+            self.take_picture()
+        else:
+            self.drive_forward_025_units()
+
+    def plan5(self):
+        """Drive around the object (blue ball)."""
+        self.stand_still = False
+        if self.drive_forward > 0:
+            self.drive_forward -= 1
+            self.act(self.speed, self.speed)
+        elif self.filter_front_left_close():
+            self.act(self.speed, self.speed)
+        else:
+            self.act(-self.speed, self.speed)
 
     def plan(self):
-        """The plan method in the SPA architecture."""
-        if self.final == 0:
-            self.if_found_object()
-        self.set_pid_parameters(0.008, 0.00, 0.000016)
-        self.set_left_wheel_speed(60 * self.left_direction)
-        self.set_right_wheel_speed(60 * self.right_direction)
-        if self.right_direction == 1 and self.left_direction == 1:
-            print(self.IMU_odometry, "IMUODO")
-            self.travel_to_object()
-        if self.camera_objects:
-            print(self.final, "FINAL", self.wincondition, self.camera_objects[0][2])
-        if self.final == 1 and abs(self.move_to_degree - self.rotation) < 15:
-            if self.stop_noise_filter > 2:
-                print("STOP------------")
-                self.shutdown = True
-            self.stop_noise_filter += 1
-        else:
-            self.stop_noise_filter = 0
+        """Main plan function."""
+        if not self.stand_still:
+            self.adjust()
 
-    def act(self):
-        """The act method in SPA architecture."""
-        self.robot.set_left_wheel_speed(9 * self.left_direction + self.get_left_wheel_pid_output())
-        self.robot.set_right_wheel_speed(9 * self.right_direction + self.get_right_wheel_pid_output())
-        if self.shutdown:
-            self.robot.set_left_wheel_speed(0)
-            self.robot.set_right_wheel_speed(0)
-        self.robot.set_grabber_height(0)
+        if self.final:
+            self.rotate()
+        elif self.lined_up_red:
+            a = 30 / self.red_radius
+            self.drive_half(a)
+        elif self.has_seen_red:
+            self.set_rotation(blue=False)
+        elif self.ready and self.rotation_start + self.rotation_add < self.rotation:
+            self.rotation_start = self.rotation
+            self.act(0, 0)
+            self.stand_still = True
+            self.take_picture_red()
+        elif self.ready:
+            self.plan5()
+        else:
+            self.blue_plan()
+
+    def blue_plan(self):
+        """Plan for getting to the blue ball."""
+        if self.reached_blue:
+            self.turn_until_front_left_sees()
+        elif self.lined_up:
+            self.plan4()
+        elif self.has_seen_blue:
+            self.set_rotation()
+        elif abs(self.rotation) > 360 and not self.long_drive:
+            self.plan3()
+        elif abs(self.rotation) > self.rotation_threshold:
+            self.plan2()
+        else:
+            self.plan1()
+
+    def take_picture_red(self):
+        """Take the picture with the camera and finds red ball."""
+        camera = self.robot.get_camera_objects()
+        self.robot.sleep(0.3)
+        for picture in camera:
+            if picture[0] == "red ball":
+                width_deg = self.robot.CAMERA_FIELD_OF_VIEW[0]
+                width = self.robot.CAMERA_RESOLUTION[0]
+                object = picture[1]
+                self.red_radius = picture[2]
+                x = object[0]
+                half_width = width / 2
+                half_width_deg = width_deg / 2
+                if x > half_width:
+                    right = True
+                    xpos = x - half_width
+                else:
+                    right = False
+                    xpos = half_width - x
+                ratio = xpos / half_width
+                ratio_deg = half_width_deg * ratio
+                if right:
+                    angle = -ratio_deg
+                else:
+                    angle = ratio_deg
+                self.red_angle = self.rotation + angle
+                self.has_seen_red = True
+                self.stand_still = True
+                print(self.red_angle)
+
+    def take_picture(self):
+        """Take the picture with the camera and finds blue ball."""
+        camera = self.robot.get_camera_objects()
+        self.robot.sleep(0.3)
+        for picture in camera:
+            if picture[0] == "blue ball":
+                width_deg = self.robot.CAMERA_FIELD_OF_VIEW[0]
+                width = self.robot.CAMERA_RESOLUTION[0]
+                object = picture[1]
+                x = object[0]
+                half_width = width / 2
+                half_width_deg = width_deg / 2
+                if x > half_width:
+                    right = True
+                    xpos = x - half_width
+                else:
+                    right = False
+                    xpos = half_width - x
+                ratio = xpos / half_width
+                ratio_deg = half_width_deg * ratio
+                if right:
+                    angle = -ratio_deg
+                else:
+                    angle = ratio_deg
+                self.blue_angle = self.rotation + angle
+                self.has_seen_blue = True
+                self.stand_still = True
+                print(self.blue_angle)
+
+    def calculate_left(self):
+        """Adjust left encoder."""
+        while True:
+            previous = self.robot.get_left_wheel_encoder()
+            self.act(self.speed, 0)
+            self.robot.sleep(0.05)
+            self.act(0, 0)
+            current = self.robot.get_left_wheel_encoder()
+            change = current - previous
+            if change <= 0:
+                self.left_n += 0.002
+            else:
+                break
+        self.act(-self.speed, 0)
+        self.robot.sleep(0.05)
+        self.act(0, 0)
+
+    def calculate_right(self):
+        """Adjust the right encoder."""
+        while True:
+            previous = self.robot.get_right_wheel_encoder()
+            self.act(0, self.speed)
+            self.robot.sleep(0.05)
+            self.act(0, 0)
+            current = self.robot.get_right_wheel_encoder()
+            change = current - previous
+            if change <= 0:
+                self.right_n += 0.002
+            else:
+                break
+        self.act(0, -self.speed)
+        self.robot.sleep(0.05)
+        self.act(0, 0)
+
+    def calculate(self):
+        """Adjust both encoders."""
+        right_e_previous = self.robot.get_right_wheel_encoder()
+        left_e_previous = self.robot.get_left_wheel_encoder()
+        self.act(self.speed, self.speed)
+        self.robot.sleep(0.05)
+        self.act(0, 0)
+        righte = self.robot.get_right_wheel_encoder()
+        lefte = self.robot.get_left_wheel_encoder()
+        self.act(-self.speed, -self.speed)
+        self.robot.sleep(0.05)
+        self.act(0, 0)
+        right = righte - right_e_previous
+        left = lefte - left_e_previous
+        if right <= 0:
+            self.calculate_right()
+        if left <= 0:
+            self.calculate_left()
+
+    def adjust(self):
+        """Adjust both encoders a little bit."""
+        right = abs(self.right_encoder - self.right_encoder_previous)
+        left = abs(self.left_encoder - self.left_encoder_previous)
+
+        if right > self.change_low:
+            self.right_n -= 0.002
+        elif right < self.change_low:
+            self.right_n += 0.002
+
+        if left > self.change_low:
+            self.left_n -= 0.002
+        elif left < self.change_low:
+            self.left_n += 0.002
 
     def spin(self):
-        """The main loop."""
+        """The main loop of the robot."""
+        self.calculate()
+        print(self.left_n, self.right_n)
+        self.robot.set_grabber_height(0)
+        self.robot.close_grabber(0)
+        self.robot.sleep(0.2)
+        self.rotation_threshold = 0
         while not self.shutdown:
             self.sense()
+            self.get_state()
             self.plan()
-            self.act()
-            self.robot.sleep(0.03)
+            self.robot.sleep(0.05)
 
 
 def main():
-    """The  main entry point."""
+    """Create a Robot object and spin it."""
     robot = Robot()
     robot.spin()
 
