@@ -187,10 +187,6 @@ class Robot:
 
     def set_rotation(self):
         """Set the rotation of the middle of the to closest balls."""
-        if self.blue_ball_angle is None or self.red_ball_angle is None:
-            self.act(0, 0)
-            self.shutdown = True
-            return None
         angle = (self.blue_ball_angle + self.red_ball_angle) / 2
         diff = abs(self.rotation - angle)
         if diff < 0.25:
