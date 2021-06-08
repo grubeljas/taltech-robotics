@@ -46,7 +46,7 @@ class Robot:
 
         # rotation
         self.rotation_threshold = 0
-        self.rotvalue = 30
+        self.rotvalue = 40
 
         # balls
         self.blue_ball_angle = None
