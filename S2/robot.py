@@ -86,14 +86,6 @@ class Robot:
         print("------")
         print("front lasers")
         print(f"dis {self.fl} {self.fm} {self.fr}")
-        # print("indexs")
-        # print(f"{self.ln} | {self.rn}")
-        # print("change")
-        # print(f"{self.lefte - self.leftep} | {self.righte - self.rightep}")
-        # print("encoders")
-        # print(f"{self.lefte} | {self.righte}")
-        # print("rotation")
-        # print(self.rotation, self.rotation_threshold)
         print("blue")
         print(self.blue_ball_angle, self.blue_ball_dis)
         print("red")
@@ -104,10 +96,7 @@ class Robot:
         print(self.i_have_driven, self.rotated2, self.drive_left, self.immunity)
         print("left, right")
         print(self.left_saw_ball, self.right_saw_ball, self.ball_saw_immunity)
-        # print("once")
-        # print(self.once, self.once2)
-        # print("filters")
-        # print(self.filter_fl(), self.filter(), self.filter_fr())
+
 
     def sense(self):
         """Read values from sensors via PiBot  API into class variables (self)."""
@@ -200,6 +189,7 @@ class Robot:
         """Set the rotation of the middle of the to closest balls."""
         if self.blue_ball_angle is None or self.red_ball_angle is None:
             self.act(0, 0)
+            self.shutdown = True
             return None
         angle = (self.blue_ball_angle + self.red_ball_angle) / 2
         diff = abs(self.rotation - angle)
@@ -246,7 +236,7 @@ class Robot:
         return b > a + 1
 
     def detect_new_balls(self):
-        """Rotate robot untill it finds both balls on either side and in the mean time take pictures."""
+        """Rotate robot until it finds both balls on either side and in the mean time take pictures."""
         if self.turn_left:
             if not self.filter_fl():
                 self.act(-self.speed, self.speed)
@@ -376,7 +366,6 @@ class Robot:
             self.act(0, 0)
             cur = self.robot.get_left_wheel_encoder()
             change = cur - prev
-            # print(cur, prev)
             if change <= 0:
                 self.ln += 0.002
             else:
@@ -395,7 +384,6 @@ class Robot:
             self.act(0, 0)
             cur = self.robot.get_right_wheel_encoder()
             change = cur - prev
-            # print(cur, prev)
             if change <= 0:
                 self.rn += 0.002
             else:
@@ -438,7 +426,6 @@ class Robot:
         elif right < self.adjust_low:
             self.rn += 0.002
 
-        # # if straight:
         if right > left:
             self.ln += 0.001
         elif right < left:
@@ -448,7 +435,6 @@ class Robot:
         """The main loop of the robot."""
         self.calculate()
         print(self.ln, self.rn)
-        # self.robot.set_grabber_height(0)
         self.robot.close_grabber(0)
         self.robot.sleep(0.2)
         self.rotation_threshold = 0
